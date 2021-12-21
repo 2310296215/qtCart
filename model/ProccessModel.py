@@ -49,13 +49,13 @@ class BasicCameraProccess(ICameraProcess):
             pass
 
     def getAlert(self):
-        if self.alert.value == 99: return
+        if self.alert.value == AlertFactory.AlertIndex_None: return
 
         WarnAlert = AlertFactory.AlertList[self.alert.value]
         WarnAlert.redAlert()
 
         self.AlertSignal.emit(WarnAlert)
-        self.alert.value = 99
+        self.alert.value = AlertFactory.AlertIndex_None
 
     def endCamera(self):
         self.queue.close()

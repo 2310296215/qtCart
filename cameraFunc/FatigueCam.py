@@ -13,6 +13,7 @@ import multiprocessing as mp
 with open('config.yml', 'r') as stream:
     config = yaml.load(stream, Loader=yaml.FullLoader)
 
+
 # Get rotation vector and translation vector
 def get_pose_estimation(img_size, image_points ):
     # 3D model points.
@@ -196,13 +197,14 @@ def models(pipeline,model_path,name):
     model_nn.out.link(model_nn_xout.input)
 
 class Main:
-    def __init__(self,frame_queue=None, command=None, alert=None, file=None,camera=False):
+    def __init__(self,frame_queue=None, command=None, alert=None, camera_id=None, file=None,camera=False, ):
         print("Loading pipeline...")
         self.frame_queue=frame_queue
         self.command=command
         self.alert=alert
         self.file = file
         self.camera = camera
+        self.camera_id = camera_id
         self.pipeline = create_pipeline(self.camera)
         self.start_pipeline()
         self.COUNTER = 0
@@ -213,8 +215,7 @@ class Main:
         self.hTOTAL = 0
 
     def start_pipeline(self):
-        #self.device = depthai.Device(self.pipeline)
-        found, device_info = depthai.Device.getDeviceByMxId(config["DRIVER_CAMERA_ID"])
+        found, device_info = depthai.Device.getDeviceByMxId(self.camera_id)
         if not found:
             raise RuntimeError("device not found")
 
@@ -403,8 +404,8 @@ class Main:
         print('end run')
 
 
-def runFatigueCam(frame_queue, command, alert):
-    Cam = Main(camera=True, frame_queue=frame_queue, command=command, alert=alert)
+def runFatigueCam(frame_queue, command, alert, camera_id):
+    Cam = Main(camera=True, frame_queue=frame_queue, command=command, alert=alert, camera_id=camera_id)
     Cam.run()
     print('all end')
 
@@ -412,8 +413,9 @@ def main():
     frame_queue = mp.Queue(4)
     command = mp.Value('i', 1)
     alert = mp.Value('i', 0)
+    camera_id = config["LEFT_CAMERA_ID"]
 
-    proccess = mp.Process(target=runFatigueCam, args=(frame_queue, command, alert, ))
+    proccess = mp.Process(target=runFatigueCam, args=(frame_queue, command, alert, camera_id,))
     proccess.start()
 
     while True:

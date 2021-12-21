@@ -5,7 +5,7 @@ import multiprocessing as mp
 
 from model.AlertModel import WarnAlert
 from model.ProccessModel import BasicCameraProccess
-from factories import CameraFactory, AlertFactory
+from factories import CameraFactory
 import yaml
 
 with open('config.yml', 'r') as stream:
@@ -24,20 +24,19 @@ class Worker(QThread):
 
         self.command.value = 1
 
-        # FatigueCam = CameraFactory.CameraFactory(CameraFactory.TextFatigueCamera)
         CombinedCam = CameraFactory.CameraFactory(CameraFactory.TextCombinedCamera)
         LeftCamera = BasicCameraProccess(self.command, CombinedCam, config["LEFT_CAMERA_ID"], self.LeftImage, self.Alert)
         RightCamera = BasicCameraProccess(self.command, CombinedCam, config["RIGHT_CAMERA_ID"], self.RightImage, self.Alert)
 
-        # YoloCam = CameraFactory.CameraFactory(CameraFactory.TextYoloCamera)
+        YoloCam = CameraFactory.CameraFactory(CameraFactory.TextYoloCamera)
         # FrontAlert = AlertFactory.AlertFactory(AlertFactory.AlertText_PedestrianFront)
-        # FrontCamera = BasicCameraProccess(self.command, YoloCam, FrontAlert, self.FrontImage, self.Alert)
+        FrontCamera = BasicCameraProccess(self.command, YoloCam, config["FRONT_CAMERA_ID"], self.FrontImage, self.Alert)
 
         # PedestrianCam = CameraFactory.CameraFactory(CameraFactory.TextPedestrianCamera)
         # RightAlert = AlertFactory.AlertFactory(AlertFactory.AlertText_PedestrianRear)
         # RearCamera = BasicCameraProccess(self.command, PedestrianCam, RightAlert, self.RightImage, self.Alert)
 
-        Cameras = [LeftCamera, RightCamera]
+        Cameras = [FrontCamera]
 
         for Camera in Cameras:
             Camera.runCamera()

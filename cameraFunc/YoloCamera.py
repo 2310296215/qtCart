@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
-
-from pathlib import Path
-import sys
 import cv2
 import depthai as dai
 import numpy as np
-import time
+from datetime import datetime
 import queue
 import yaml
+import multiprocessing as mp
+import yaml
+
+from factories import AlertFactory
+
+with open('config.yml', 'r') as stream:
+    config = yaml.load(stream, Loader=yaml.FullLoader)
 
 '''
 Spatial Tiny-yolo example
@@ -16,16 +20,11 @@ Spatial Tiny-yolo example
 '''
 
 
-def runYoloCamera(frame_queue, command, alert):
-    # Get argument first
-    #nnBlobPath = str((Path(__file__).parent / Path('models/yolo-v4-tiny-tf_openvino_2021.4_6shave.blob')).resolve().absolute())
+def runCamera(frame_queue, command, alert, camera_id):
     nnBlobPath = 'cameraFunc/models/yolo-v4-tiny-tf_openvino_2021.4_6shave.blob'
 
     with open('config.yml', 'r') as stream:
         config = yaml.load(stream, Loader=yaml.FullLoader)
-
-    if not Path(nnBlobPath).exists():
-        raise FileNotFoundError(f'Required file/s not found, please run "{sys.executable} install_requirements.py"')
 
     # Tiny yolo v3/4 label texts
     labelMap = [
@@ -114,7 +113,7 @@ def runYoloCamera(frame_queue, command, alert):
     stereo.depth.link(spatialDetectionNetwork.inputDepth)
     spatialDetectionNetwork.passthroughDepth.link(xoutDepth.input)
 
-    found, device_info = dai.Device.getDeviceByMxId(config["FRONT_CAMERA_ID"])
+    found, device_info = dai.Device.getDeviceByMxId(camera_id)
     if not found:
         raise RuntimeError("device not found")
     device = dai.Device(pipeline, device_info)
@@ -125,10 +124,17 @@ def runYoloCamera(frame_queue, command, alert):
     xoutBoundingBoxDepthMappingQueue = device.getOutputQueue(name="boundingBoxDepthMapping", maxSize=4, blocking=False)
     depthQueue = device.getOutputQueue(name="depth", maxSize=4, blocking=False)
 
-    startTime = time.monotonic()
     counter = 0
-    fps = 0
     color = (255, 255, 255)
+
+    video_index = 1
+    t1 = datetime.now()
+    t2 = t1
+    fileName = f"videos/cam_{camera_id}_{video_index}.avi"
+    video_code = cv2.VideoWriter_fourcc(*'XVID')
+    frameRate = 20
+    resolution = (1280, 720)
+    videoOutput = cv2.VideoWriter(fileName, video_code, frameRate, resolution)
 
     while command.value != 0:
         inPreview = previewQueue.get()
@@ -168,24 +174,62 @@ def runYoloCamera(frame_queue, command, alert):
 
             cv2.rectangle(frame, (x1, y1), (x2, y2), color, cv2.FONT_HERSHEY_SIMPLEX)
 
-            if alert.value != 0:
+            if alert.value != AlertFactory.AlertIndex_None:
                 continue
 
             if person_distance < config["RED_ALERT_DISTANCE"]:
-                alert.value = config["RED_ALERT_SIGNAL"]
+                alert.value = AlertFactory.AlertIndex_PedestrianFront
             elif person_distance < config["YELLOW_ALERT_DISTANCE"]:
-                alert.value = config["YELLOW_ALERT_SIGNAL"]
+                alert.value = AlertFactory.AlertIndex_PedestrianFront
 
-        #crop black out of image
+        # crop black out of image
         frame = frame[91:325, 0:416]
 
         if config["PRODUCTION"] is True:
             frame = cv2.resize(frame, (config["MainImage_Width"], config["MainImage_Height"]), interpolation=cv2.INTER_LINEAR)
 
+        t2 = datetime.now()
+        if (t2 - t1).seconds >= 60:
+            videoOutput.release()
+            video_index += 1
+            # 每30分鐘洗白重來
+            video_index = video_index % 10
+            fileName = f"videos/cam_{camera_id}_{video_index}.avi"
+            videoOutput = cv2.VideoWriter(fileName, video_code, frameRate, resolution)
+            t1 = t2
+        videoOutput.write(frame)
         try:
             frame_queue.put_nowait(frame)
         except queue.Full:
             pass
 
+        videoOutput.release()
 
+def main():
+    frame_queue = mp.Queue(4)
+    command = mp.Value('i', 1)
+    alert = mp.Value('i', 99)
+    camera_id = config["FRONT_CAMERA_ID"]
+    print(camera_id)
 
+    proccess = mp.Process(target=runCamera, args=(frame_queue, command, alert, camera_id, ))
+    proccess.start()
+
+    while True:
+        try:
+            frame = frame_queue.get_nowait()
+            cv2.imshow('frame', frame)
+        except queue.Empty or queue.Full:
+            pass
+
+        if alert.value != AlertFactory.AlertIndex_None:
+            print(AlertFactory.AlertList[alert.value])
+
+        if cv2.waitKey(1) == ord('q'):
+            command.value = 0
+            break
+
+    proccess.kill()
+
+if __name__ == '__main__':
+    main()

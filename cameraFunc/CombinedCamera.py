@@ -1,14 +1,10 @@
-import argparse
-import time
 from pathlib import Path
-from time import monotonic
 import multiprocessing as mp
 import cv2
 import depthai as dai
 import numpy as np
-from imutils.video import FPS
-import os
 import queue
+from datetime import datetime
 
 import yaml
 
@@ -23,9 +19,10 @@ path_helmet_model = "cameraFunc/models/helmet_detection_yolox1_openvino_2021.4_6
 parentDir = Path(__file__).parent
 shaves = 6
 size = (320, 320)
-CLASSES = ["phone", "person","head"]
+CLASSES = ["phone", "person", "head"]
 
 __all__ = ["vis"]
+
 
 def multiclass_nms_phone(boxes, scores, nms_thr, score_thr):
     """Multiclass NMS implemented in Numpy"""
@@ -48,6 +45,7 @@ def multiclass_nms_phone(boxes, scores, nms_thr, score_thr):
         return None
     return np.concatenate(final_dets, 0)
 
+
 def demo_postprocess_phone(outputs, img_size, p6=False):
 
     grids = []
@@ -58,8 +56,8 @@ def demo_postprocess_phone(outputs, img_size, p6=False):
     else:
         strides = [8, 16, 32, 64]
 
-    hsizes = [img_size[0]//stride for stride in strides]
-    wsizes = [img_size[1]//stride for stride in strides]
+    hsizes = [img_size[0] // stride for stride in strides]
+    wsizes = [img_size[1] // stride for stride in strides]
 
     for hsize, wsize, stride in zip(hsizes, wsizes, strides):
         xv, yv = np.meshgrid(np.arange(hsize), np.arange(wsize))
@@ -74,6 +72,7 @@ def demo_postprocess_phone(outputs, img_size, p6=False):
     outputs[..., 2:4] = np.exp(outputs[..., 2:4]) * expanded_strides
 
     return outputs
+
 
 def toTensorResult(packet):
     """
@@ -323,7 +322,16 @@ def runCamera(frame_queue, command, alert, camera_id):
     print("Starting pipeline...")
     cam_out = device.getOutputQueue("cam_out", 1, True)
     yolox_det_nn_helmet = device.getOutputQueue("yolox_det_nn_helmet")
-    yolox_det_nn_phone = device.getOutputQueue("yolox_det_nn_phone", 4,False)
+    yolox_det_nn_phone = device.getOutputQueue("yolox_det_nn_phone", 4, False)
+
+    video_index = 1
+    t1 = datetime.now()
+    t2 = t1
+    fileName = f"videos/cam_{camera_id}_{video_index}.avi"
+    video_code = cv2.VideoWriter_fourcc(*'XVID')
+    frameRate = 20
+    resolution = (1280, 720)
+    videoOutput = cv2.VideoWriter(fileName, video_code, frameRate, resolution)
 
     frame = None
 
@@ -399,11 +407,23 @@ def runCamera(frame_queue, command, alert, camera_id):
                 alert.value = AlertFactory.AlertIndex_PedestrianRear
             elif helmet_count < 1 and people_count > 0:
                 alert.value = AlertFactory.AlertIndex_NoHelmet
+
+        t2 = datetime.now()
+        if (t2 - t1).seconds >= 60:
+            videoOutput.release()
+            video_index += 1
+            # 每30分鐘洗白重來
+            video_index = video_index % 10
+            fileName = f"videos/cam_{camera_id}_{video_index}.avi"
+            videoOutput = cv2.VideoWriter(fileName, video_code, frameRate, resolution)
+            t1 = t2
+
         try:
+            videoOutput.write(frame)
             frame_queue.put_nowait(frame)
         except queue.Full:
             pass
-
+    videoOutput.release()
     print("ended")
 
 
@@ -424,7 +444,7 @@ def main():
         except queue.Empty or queue.Full:
             pass
 
-        if alert.value != 99:
+        if alert.value != AlertFactory.AlertIndex_None:
             print(AlertFactory.AlertList[alert.value])
 
         if cv2.waitKey(1) == ord('q'):

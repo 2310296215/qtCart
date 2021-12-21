@@ -15,6 +15,7 @@ import time
 import multiprocessing as mp
 import queue
 import yaml
+from factories import AlertFactory
 
 # Get argument first
 nnPath = 'cameraFunc/models/yolo-v4-tiny-tf_openvino_2021.4_6shave.blob'
@@ -170,7 +171,7 @@ def runPedestrianCamera(frame_queue, command, alert):
             if person_count <= 1:
                 continue
 
-            if alert.value == 0:
+            if alert.value == AlertFactory.AlertIndex_None:
                 alert.value = config["RED_ALERT_SIGNAL"]
 
         # crop black out of image

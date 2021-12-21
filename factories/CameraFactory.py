@@ -8,7 +8,7 @@ TextCombinedCamera = 'CombinedCamera'
 def CameraFactory(CameraIndex):
     CameraDict = {
         TextFatigueCamera: FatigueCam.runFatigueCam,
-        TextYoloCamera: YoloCamera.runYoloCamera,
+        TextYoloCamera: YoloCamera.runCamera,
         TextPedestrianCamera: PedestrianCamera.runPedestrianCamera,
         TextCombinedCamera: CombinedCamera.runCamera
     }

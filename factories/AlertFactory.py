@@ -15,6 +15,7 @@ def AlertFactory(AlertIndex):
 
     return AlertDict[AlertIndex]
 
+AlertIndex_None = 99
 AlertIndex_PedestrianFront = 0
 AlertIndex_PedestrianRear = 1
 AlertIndex_DriverFocus = 2
