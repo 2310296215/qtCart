@@ -3,10 +3,11 @@ import queue
 from datetime import datetime
 import multiprocessing as mp
 
-def runCamera(frame_queue:mp.Queue, command:mp.Value, alert:mp.Value, camera_id: str, status:mp.Value):
+
+def runCamera(frame_queue: mp.Queue, command: mp.Value, alert: mp.Value, camera_id: str, status: mp.Value):
     cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
     t = datetime.now()
-    
+
     try:
         while command.value != 0:
             status.value = 1

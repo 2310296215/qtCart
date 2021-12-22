@@ -1,7 +1,6 @@
 from abc import ABC, abstractclassmethod
 import cv2
 from datetime import datetime
-from model.AlertModel import WarnAlert
 from factories import AlertFactory
 from PyQt5.QtCore import pyqtSignal
 import multiprocessing as mp
@@ -10,6 +9,7 @@ import yaml
 
 with open('config.yml', 'r') as stream:
     config = yaml.load(stream, Loader=yaml.FullLoader)
+
 
 class ICameraProcess(ABC):
     @abstractclassmethod
@@ -86,9 +86,10 @@ class BasicCameraProccess(ICameraProcess):
             return frame
         except queue.Empty or queue.Full:
             pass
-            
+
     def getAlert(self):
-        if self.alert.value == AlertFactory.AlertIndex_None: return
+        if self.alert.value == AlertFactory.AlertIndex_None:
+            return
 
         WarnAlert = AlertFactory.AlertList[self.alert.value]
         WarnAlert.redAlert()
