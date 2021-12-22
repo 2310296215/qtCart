@@ -190,34 +190,4 @@ def runCamera(frame_queue:mp.Queue, command:mp.Value, alert:mp.Value, camera_id:
         status.value = 0
         while not frame_queue.empty():
             frame_queue.get_nowait()
-        frame_queue.close()            
-
-
-def main():
-    frame_queue = mp.Queue(4)
-    command = mp.Value('i', 1)
-    alert = mp.Value('i', 99)
-    camera_id = config["FRONT_CAMERA_ID"]
-    print(camera_id)
-
-    proccess = mp.Process(target=runCamera, args=(frame_queue, command, alert, camera_id, ))
-    proccess.start()
-
-    while True:
-        try:
-            frame = frame_queue.get_nowait()
-            cv2.imshow('frame', frame)
-        except queue.Empty or queue.Full:
-            pass
-
-        if alert.value != AlertFactory.AlertIndex_None:
-            print(AlertFactory.AlertList[alert.value])
-
-        if cv2.waitKey(1) == ord('q'):
-            command.value = 0
-            break
-
-    proccess.kill()
-
-if __name__ == '__main__':
-    main()
+        frame_queue.close()

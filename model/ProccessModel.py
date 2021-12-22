@@ -68,7 +68,7 @@ class BasicCameraProccess(ICameraProcess):
         self.videoOutput.write(frame)
         self.t2 = datetime.now()
         if (self.t2 - self.t1).seconds >= int(config["Record_Seconds"]):
-            print("RELEASE")
+            print(f"RELEASE {self.camera_id}")
             self.videoOutput.release()
             self.video_index += 1
             # 每30分鐘洗白重來

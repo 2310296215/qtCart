@@ -32,12 +32,12 @@ class Worker(QThread):
         CombinedCam = CameraFactory.CameraFactory(CameraFactory.TextCombinedCamera)
         YoloCam = CameraFactory.CameraFactory(CameraFactory.TextYoloCamera)
 
-        # LeftCamera = BasicCameraProccess(self.command, CombinedCam, config["LEFT_CAMERA_ID"], self.LeftImage, self.Alert, self.LeftCameraStatus)
-        # RightCamera = BasicCameraProccess(self.command, CombinedCam, config["RIGHT_CAMERA_ID"], self.RightImage, self.Alert, self.RightCameraStatus)
-        RightCamera = BasicCameraProccess(self.command, TestCamera, config["RIGHT_CAMERA_ID"], self.RightImage, self.Alert, self.LeftCameraStatus)
-        # FrontCamera = BasicCameraProccess(self.command, YoloCam, config["FRONT_CAMERA_ID"], self.FrontImage, self.Alert, self.FrontCameraStatus)     
+        LeftCamera = BasicCameraProccess(self.command, CombinedCam, config["LEFT_CAMERA_ID"], self.LeftImage, self.Alert, self.LeftCameraStatus)
+        RightCamera = BasicCameraProccess(self.command, CombinedCam, config["RIGHT_CAMERA_ID"], self.RightImage, self.Alert, self.RightCameraStatus)
+        # TestCamera = BasicCameraProccess(self.command, TestCamera, config["RIGHT_CAMERA_ID"], self.RightImage, self.Alert, self.LeftCameraStatus)
+        FrontCamera = BasicCameraProccess(self.command, YoloCam, config["FRONT_CAMERA_ID"], self.FrontImage, self.Alert, self.FrontCameraStatus)
 
-        Cameras = [RightCamera]
+        Cameras = [RightCamera, FrontCamera, LeftCamera]
 
         for Camera in Cameras:
             Camera.runCamera()

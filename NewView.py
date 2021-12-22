@@ -20,7 +20,9 @@ class ViewWindow(QMainWindow, Ui_MainWindow):
         super().__init__(parent)
         self.setupUi(self)
 
-        self.defaultStyleSheet = "background-color: black; font-family:微軟正黑體; font-size:40pt;font-weight: bold; color:white"
+        self.defaultStyleSheet = "background-color: black; font-family:微軟正黑體; font-size:28pt;font-weight: bold; color:white"
+        self.styleSheetStatusOn = "background-color: black; font-family:微軟正黑體; color: white"
+        self.styleSheetStatusOff = "background-color: red; font-family:微軟正黑體; color: black"
         self.defaultWarnMessage = "警示訊息"
         self.defaultFrontLabelText = "前鏡頭"
         self.defaultLeftLabelText = "左鏡頭"
@@ -29,9 +31,6 @@ class ViewWindow(QMainWindow, Ui_MainWindow):
     def setup(self, controller):
         self.qs = QSound('sound/welcome.wav', parent=self.labelSpeed)
         if config["PRODUCTION"] is True:
-            # self.showMaximized()
-            # self.LabelFront.setStyleSheet("background-color: yellow")
-            # self.LabelRear.setStyleSheet("background-color: red")
             self.qs.play()
 
     def prepareWorker(self, worker):
@@ -57,18 +56,25 @@ class ViewWindow(QMainWindow, Ui_MainWindow):
     @pyqtSlot(int)
     def UpdateRightCameraStatus(self, status):
         self.checkBoxCamRight.setChecked(status)
+        self.checkBoxCamRight.setStyleSheet(self.styleSheetStatusOn)
         if status == 0:
             self.setDefaultView()
+            self.checkBoxCamRight.setStyleSheet(self.styleSheetStatusOff)
 
     @pyqtSlot(int)
     def UpdateLeftCameraStatus(self, status):
         self.checkBoxCamLeft.setChecked(status)
+        self.checkBoxCamLeft.setStyleSheet(self.styleSheetStatusOn)
         if status == 0:
             self.setDefaultView()
+            self.checkBoxCamLeft.setStyleSheet(self.styleSheetStatusOff)
 
     @pyqtSlot(int)
     def UpdateFrontCameraStatus(self, status):
-        self.checkBoxCamFront.setChecked(status)        
+        self.checkBoxCamFront.setChecked(status)
+        self.checkBoxCamFront.setStyleSheet(self.styleSheetStatusOn)
+        if status == 0:
+            self.checkBoxCamFront.setStyleSheet(self.styleSheetStatusOff)
 
     @pyqtSlot(np.ndarray)
     def UpdateLeftSlot(self, Image):
@@ -102,8 +108,8 @@ class ViewWindow(QMainWindow, Ui_MainWindow):
         self.qs.play()
 
         for i in range(0, 1800, 600):
-            QTimer.singleShot((0.5 * i), lambda: self.labelSpeed.setStyleSheet(
-                f"background-color: {WarnAlert.warn_color}; font-family:微軟正黑體; font-size:40pt;font-weight: bold;"))
+            QTimer.singleShot((0.5 * i), lambda: self.labelSpeed.setStyleSheet(self.defaultStyleSheet.replace("black", WarnAlert.warn_color)))
+                # f"background-color: {WarnAlert.warn_color}; font-family:微軟正黑體; font-size:20pt;font-weight: bold;"))
             QTimer.singleShot(
                 i, lambda: self.labelSpeed.setStyleSheet(self.defaultStyleSheet))
 

@@ -30,7 +30,7 @@ DriverImage_Width: 540
 
 MainWindowDimention: [1028, 846]
 
-Record_Seconds: 2
+Record_Seconds: 10
 Record_Total : 6
 
-PRODUCTION: true
+PRODUCTION: false
