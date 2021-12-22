@@ -39,16 +39,36 @@ class ViewWindow(QMainWindow, Ui_MainWindow):
         self.Worker.finished.connect(self.setDefaultView)
         self.Worker.LeftImage.connect(self.UpdateLeftSlot)
         self.Worker.RightImage.connect(self.UpdateRightSlot)
+
+        self.Worker.RightCameraStatus.connect(self.UpdateRightCameraStatus)
+        self.Worker.LeftCameraStatus.connect(self.UpdateLeftCameraStatus)
+        self.Worker.FrontCameraStatus.connect(self.UpdateFrontCameraStatus)
+
         self.Worker.Alert.connect(self.runAlert)
 
     @pyqtSlot()
     def setDefaultView(self):
-
         self.labelCamLeft.clear()
         self.labelCamRight.clear()
 
         self.labelCamLeft.setText(self.defaultLeftLabelText)
         self.labelCamRight.setText(self.defaultRightLabelText)
+
+    @pyqtSlot(int)
+    def UpdateRightCameraStatus(self, status):
+        self.checkBoxCamRight.setChecked(status)
+        if status == 0:
+            self.setDefaultView()
+
+    @pyqtSlot(int)
+    def UpdateLeftCameraStatus(self, status):
+        self.checkBoxCamLeft.setChecked(status)
+        if status == 0:
+            self.setDefaultView()
+
+    @pyqtSlot(int)
+    def UpdateFrontCameraStatus(self, status):
+        self.checkBoxCamFront.setChecked(status)        
 
     @pyqtSlot(np.ndarray)
     def UpdateLeftSlot(self, Image):
@@ -61,6 +81,11 @@ class ViewWindow(QMainWindow, Ui_MainWindow):
     def keyPressEvent(self, event):
         key = event.key()
         print(key)
+
+        if key == 72:
+            self.checkBoxCamLeft.setChecked(1)
+        elif key == 71:
+            self.checkBoxCamLeft.setChecked(0)
 
         if key == 81:  # Q
             self.Worker.stop()

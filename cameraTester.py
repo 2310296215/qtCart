@@ -15,10 +15,11 @@ def main():
     # camera_id = config["LEFT_CAMERA_ID"]
     camera_id = config["FRONT_CAMERA_ID"]
 
-    CameraProcess = CameraFactory.CameraFactory(
-        CameraFactory.TextCombinedCamera)
-    CameraProcess = CameraFactory.CameraFactory(
-        CameraFactory.TextYoloCamera)
+    CameraProcess = CameraFactory.CameraFactory(CameraFactory.TextTestCamera)
+    # CameraProcess = CameraFactory.CameraFactory(
+    #     CameraFactory.TextCombinedCamera)
+    # CameraProcess = CameraFactory.CameraFactory(
+    #     CameraFactory.TextYoloCamera)
     # CameraProcess = CameraFactory.CameraFactory(
     #     CameraFactory.TextFatigueCamera)
     proccess = mp.Process(

@@ -18,25 +18,26 @@ class Worker(QThread):
     RightImage = pyqtSignal(numpy.ndarray)
     Alert = pyqtSignal(WarnAlert)
 
+    LeftCameraStatus = pyqtSignal(int)
+    RightCameraStatus = pyqtSignal(int)
+    FrontCameraStatus = pyqtSignal(int)
+
     command = mp.Value('i', 0)
 
     def run(self):
 
         self.command.value = 1
 
+        TestCamera = CameraFactory.CameraFactory(CameraFactory.TextTestCamera)
         CombinedCam = CameraFactory.CameraFactory(CameraFactory.TextCombinedCamera)
-        LeftCamera = BasicCameraProccess(self.command, CombinedCam, config["LEFT_CAMERA_ID"], self.LeftImage, self.Alert)
-        RightCamera = BasicCameraProccess(self.command, CombinedCam, config["RIGHT_CAMERA_ID"], self.RightImage, self.Alert)
-
         YoloCam = CameraFactory.CameraFactory(CameraFactory.TextYoloCamera)
-        # FrontAlert = AlertFactory.AlertFactory(AlertFactory.AlertText_PedestrianFront)
-        FrontCamera = BasicCameraProccess(self.command, YoloCam, config["FRONT_CAMERA_ID"], self.FrontImage, self.Alert)
 
-        # PedestrianCam = CameraFactory.CameraFactory(CameraFactory.TextPedestrianCamera)
-        # RightAlert = AlertFactory.AlertFactory(AlertFactory.AlertText_PedestrianRear)
-        # RearCamera = BasicCameraProccess(self.command, PedestrianCam, RightAlert, self.RightImage, self.Alert)
+        # LeftCamera = BasicCameraProccess(self.command, CombinedCam, config["LEFT_CAMERA_ID"], self.LeftImage, self.Alert, self.LeftCameraStatus)
+        # RightCamera = BasicCameraProccess(self.command, CombinedCam, config["RIGHT_CAMERA_ID"], self.RightImage, self.Alert, self.RightCameraStatus)
+        RightCamera = BasicCameraProccess(self.command, TestCamera, config["RIGHT_CAMERA_ID"], self.RightImage, self.Alert, self.LeftCameraStatus)
+        # FrontCamera = BasicCameraProccess(self.command, YoloCam, config["FRONT_CAMERA_ID"], self.FrontImage, self.Alert, self.FrontCameraStatus)     
 
-        Cameras = [FrontCamera]
+        Cameras = [RightCamera]
 
         for Camera in Cameras:
             Camera.runCamera()
@@ -45,6 +46,7 @@ class Worker(QThread):
 
         while self.ThreadActive:
             for Camera in Cameras:
+                Camera.getStatus()
                 Camera.getFrame()
                 Camera.getAlert()
 

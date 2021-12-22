@@ -273,10 +273,9 @@ def frame_norm(frame, bbox):
         * np.array([*frame.shape[:2], *frame.shape[:2]])[::-1]
     ).astype(int)
 
-def runCamera(frame_queue, command, alert, camera_id):
+def runCamera(frame_queue:mp.Queue, command:mp.Value, alert:mp.Value, camera_id: str, status:mp.Value):
     pipeline = dai.Pipeline()
 
-    print("Creating Color Camera...")
     cam = pipeline.createColorCamera()
     cam.setPreviewSize(1280, 720)
     cam.setResolution(dai.ColorCameraProperties.SensorResolution.THE_1080_P)
@@ -324,107 +323,94 @@ def runCamera(frame_queue, command, alert, camera_id):
     yolox_det_nn_helmet = device.getOutputQueue("yolox_det_nn_helmet")
     yolox_det_nn_phone = device.getOutputQueue("yolox_det_nn_phone", 4, False)
 
-    video_index = 1
-    t1 = datetime.now()
-    t2 = t1
-    fileName = f"videos/cam_{camera_id}_{video_index}.avi"
-    video_code = cv2.VideoWriter_fourcc(*'XVID')
-    frameRate = 20
-    resolution = (1280, 720)
-    videoOutput = cv2.VideoWriter(fileName, video_code, frameRate, resolution)
-
     frame = None
+    try:
+        while command.value != 0:
+            status.value = 1
+            phone_exists = False
+            helmet_count = 0
+            people_count = 0
 
-    while command.value != 0:
-        phone_exists = False
-        helmet_count = 0
-        people_count = 0
+            yolox_det_data_helmet = yolox_det_nn_helmet.tryGet()
+            frame = cam_out.get().getCvFrame()
+            yolox_det_data_phone = yolox_det_nn_phone.tryGet()
 
-        yolox_det_data_helmet = yolox_det_nn_helmet.tryGet()
-        frame = cam_out.get().getCvFrame()
-        yolox_det_data_phone = yolox_det_nn_phone.tryGet()
+            if yolox_det_data_phone is not None:
+                res = toTensorResult(yolox_det_data_phone).get("output")
+                predictions = demo_postprocess_phone(res, size, p6=False)[0]
+                # predictions = res[0]
+                boxes = predictions[:, :4]
+                scores = predictions[:, 4, None] * predictions[:, 5:]
 
-        if yolox_det_data_phone is not None:
-            res = toTensorResult(yolox_det_data_phone).get("output")
-            predictions = demo_postprocess_phone(res, size, p6=False)[0]
-            # predictions = res[0]
-            boxes = predictions[:, :4]
-            scores = predictions[:, 4, None] * predictions[:, 5:]
+                boxes_xyxy = np.ones_like(boxes)
+                boxes_xyxy[:, 0] = boxes[:, 0] - boxes[:, 2] / 2.0
+                boxes_xyxy[:, 1] = boxes[:, 1] - boxes[:, 3] / 2.0
+                boxes_xyxy[:, 2] = boxes[:, 0] + boxes[:, 2] / 2.0
+                boxes_xyxy[:, 3] = boxes[:, 1] + boxes[:, 3] / 2.0
 
-            boxes_xyxy = np.ones_like(boxes)
-            boxes_xyxy[:, 0] = boxes[:, 0] - boxes[:, 2] / 2.0
-            boxes_xyxy[:, 1] = boxes[:, 1] - boxes[:, 3] / 2.0
-            boxes_xyxy[:, 2] = boxes[:, 0] + boxes[:, 2] / 2.0
-            boxes_xyxy[:, 3] = boxes[:, 1] + boxes[:, 3] / 2.0
+                input_shape = np.array(size)
+                min_r = (input_shape / frame.shape[:2]).min()
+                offset = (np.array(frame.shape[:2]) * min_r - input_shape) / 2
+                offset = np.ravel([offset, offset])
+                boxes_xyxy = (boxes_xyxy + offset[::-1]) / min_r
 
-            input_shape = np.array(size)
-            min_r = (input_shape / frame.shape[:2]).min()
-            offset = (np.array(frame.shape[:2]) * min_r - input_shape) / 2
-            offset = np.ravel([offset, offset])
-            boxes_xyxy = (boxes_xyxy + offset[::-1]) / min_r
+                dets = multiclass_nms_phone(boxes_xyxy, scores, nms_thr=0.3, score_thr=0.3)
 
-            dets = multiclass_nms_phone(boxes_xyxy, scores, nms_thr=0.3, score_thr=0.3)
+                if dets is not None:
+                    final_boxes = dets[:, :4]
+                    final_scores, final_cls_inds = dets[:, 4], dets[:, 5]
+                    for cls_ind in final_cls_inds:
+                        object_name = CLASSES[int(cls_ind)]
+                        if object_name == "phone": phone_exists = True
+                        elif object_name == "person": people_count += 1
 
-            if dets is not None:
-                final_boxes = dets[:, :4]
-                final_scores, final_cls_inds = dets[:, 4], dets[:, 5]
-                for cls_ind in final_cls_inds:
-                    object_name = CLASSES[int(cls_ind)]
-                    if object_name == "phone": phone_exists = True
-                    elif object_name == "person": people_count += 1
+            if yolox_det_data_helmet is not None:
+                res = to_tensor_result(yolox_det_data_helmet).get("output")
+                predictions = demo_postprocess_helmet(res, (320, 320), p6=False)[0]
 
-        if yolox_det_data_helmet is not None:
-            res = to_tensor_result(yolox_det_data_helmet).get("output")
-            predictions = demo_postprocess_helmet(res, (320, 320), p6=False)[0]
+                boxes = predictions[:, :4]
+                scores = predictions[:, 4, None] * predictions[:, 5:]
 
-            boxes = predictions[:, :4]
-            scores = predictions[:, 4, None] * predictions[:, 5:]
+                boxes_xyxy = np.ones_like(boxes)
+                boxes_xyxy[:, 0] = boxes[:, 0] - boxes[:, 2] / 2.0
+                boxes_xyxy[:, 1] = boxes[:, 1] - boxes[:, 3] / 2.0
+                boxes_xyxy[:, 2] = boxes[:, 0] + boxes[:, 2] / 2.0
+                boxes_xyxy[:, 3] = boxes[:, 1] + boxes[:, 3] / 2.0
 
-            boxes_xyxy = np.ones_like(boxes)
-            boxes_xyxy[:, 0] = boxes[:, 0] - boxes[:, 2] / 2.0
-            boxes_xyxy[:, 1] = boxes[:, 1] - boxes[:, 3] / 2.0
-            boxes_xyxy[:, 2] = boxes[:, 0] + boxes[:, 2] / 2.0
-            boxes_xyxy[:, 3] = boxes[:, 1] + boxes[:, 3] / 2.0
+                input_shape = np.array([320, 320])
+                min_r = (input_shape / frame.shape[:2]).min()
+                offset = (np.array(frame.shape[:2]) * min_r - input_shape) / 2
+                offset = np.ravel([offset, offset])
+                boxes_xyxy = (boxes_xyxy + offset[::-1]) / min_r
 
-            input_shape = np.array([320, 320])
-            min_r = (input_shape / frame.shape[:2]).min()
-            offset = (np.array(frame.shape[:2]) * min_r - input_shape) / 2
-            offset = np.ravel([offset, offset])
-            boxes_xyxy = (boxes_xyxy + offset[::-1]) / min_r
+                dets = multiclass_nms_helmet(boxes_xyxy, scores, nms_thr=0.45, score_thr=0.2)
 
-            dets = multiclass_nms_helmet(boxes_xyxy, scores, nms_thr=0.45, score_thr=0.2)
+                if dets is not None:
+                    final_boxes = dets[:, :4]
+                    final_scores, final_cls_inds = dets[:, 4], dets[:, 5]
+                    for cls_ind in final_cls_inds:
+                        object_name = VOC_CLASSES[int(cls_ind)]
+                        if object_name == "helmet": helmet_count += 1
+                # print(f"phone: {phone_exists} people:{people_count} helm:{helmet_count}")
+                if phone_exists:
+                    alert.value = AlertFactory.AlertIndex_NoPhone
+                elif people_count > 1:
+                    alert.value = AlertFactory.AlertIndex_PedestrianRear
+                elif helmet_count < 1 and people_count > 0:
+                    alert.value = AlertFactory.AlertIndex_NoHelmet
 
-            if dets is not None:
-                final_boxes = dets[:, :4]
-                final_scores, final_cls_inds = dets[:, 4], dets[:, 5]
-                for cls_ind in final_cls_inds:
-                    object_name = VOC_CLASSES[int(cls_ind)]
-                    if object_name == "helmet": helmet_count += 1
-            # print(f"phone: {phone_exists} people:{people_count} helm:{helmet_count}")
-            if phone_exists:
-                alert.value = AlertFactory.AlertIndex_NoPhone
-            elif people_count > 1:
-                alert.value = AlertFactory.AlertIndex_PedestrianRear
-            elif helmet_count < 1 and people_count > 0:
-                alert.value = AlertFactory.AlertIndex_NoHelmet
+            try:
+                frame_queue.put_nowait(frame)
+            except queue.Full:
+                pass
 
-        t2 = datetime.now()
-        if (t2 - t1).seconds >= 60:
-            videoOutput.release()
-            video_index += 1
-            # 每30分鐘洗白重來
-            video_index = video_index % 10
-            fileName = f"videos/cam_{camera_id}_{video_index}.avi"
-            videoOutput = cv2.VideoWriter(fileName, video_code, frameRate, resolution)
-            t1 = t2
-
-        try:
-            videoOutput.write(frame)
-            frame_queue.put_nowait(frame)
-        except queue.Full:
-            pass
-    videoOutput.release()
-    print("ended")
+    except Exception as e:
+        print(e)
+        status.value = 0
+    finally:
+        while not frame_queue.empty():
+            frame_queue.get_nowait()
+        frame_queue.close()    
 
 
 def main():

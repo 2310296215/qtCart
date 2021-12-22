@@ -2,9 +2,7 @@
 import cv2
 import depthai as dai
 import numpy as np
-from datetime import datetime
 import queue
-import yaml
 import multiprocessing as mp
 import yaml
 
@@ -20,7 +18,7 @@ Spatial Tiny-yolo example
 '''
 
 
-def runCamera(frame_queue, command, alert, camera_id):
+def runCamera(frame_queue:mp.Queue, command:mp.Value, alert:mp.Value, camera_id: str, status:mp.Value):
     nnBlobPath = 'cameraFunc/models/yolo-v4-tiny-tf_openvino_2021.4_6shave.blob'
 
     with open('config.yml', 'r') as stream:
@@ -127,83 +125,73 @@ def runCamera(frame_queue, command, alert, camera_id):
     counter = 0
     color = (255, 255, 255)
 
-    video_index = 1
-    t1 = datetime.now()
-    t2 = t1
-    fileName = f"videos/cam_{camera_id}_{video_index}.avi"
-    video_code = cv2.VideoWriter_fourcc(*'XVID')
-    frameRate = 20
-    resolution = (1280, 720)
-    videoOutput = cv2.VideoWriter(fileName, video_code, frameRate, resolution)
+    try:
+        while command.value != 0:
+            status.value = 1
+            inPreview = previewQueue.get()
+            inDet = detectionNNQueue.get()
+            depth = depthQueue.get()
 
-    while command.value != 0:
-        inPreview = previewQueue.get()
-        inDet = detectionNNQueue.get()
-        depth = depthQueue.get()
+            frame = inPreview.getCvFrame()
 
-        frame = inPreview.getCvFrame()
+            counter+=1
+            detections = inDet.detections
 
-        counter+=1
-        detections = inDet.detections
+            # If the frame is available, draw bounding boxes on it and show the frame
+            height = frame.shape[0]
+            width  = frame.shape[1]
 
-        # If the frame is available, draw bounding boxes on it and show the frame
-        height = frame.shape[0]
-        width  = frame.shape[1]
+            for detection in detections:
+                # Denormalize bounding box
+                x1 = int(detection.xmin * width)
+                x2 = int(detection.xmax * width)
+                y1 = int(detection.ymin * height)
+                y2 = int(detection.ymax * height)
+                try:
+                    label = labelMap[detection.label]
+                except:
+                    label = detection.label
 
-        for detection in detections:
-            # Denormalize bounding box
-            x1 = int(detection.xmin * width)
-            x2 = int(detection.xmax * width)
-            y1 = int(detection.ymin * height)
-            y2 = int(detection.ymax * height)
+                if label != 'person':
+                    continue
+
+                person_distance = int(detection.spatialCoordinates.z)
+
+                cv2.putText(frame, str(label), (x1 + 10, y1 + 20), cv2.FONT_HERSHEY_TRIPLEX, 0.5, 255)
+                cv2.putText(frame, "{:.2f}".format(detection.confidence*100), (x1 + 10, y1 + 35), cv2.FONT_HERSHEY_TRIPLEX, 0.5, 255)
+                cv2.putText(frame, f"X: {int(detection.spatialCoordinates.x)} mm", (x1 + 10, y1 + 50), cv2.FONT_HERSHEY_TRIPLEX, 0.5, 255)
+                cv2.putText(frame, f"Y: {int(detection.spatialCoordinates.y)} mm", (x1 + 10, y1 + 65), cv2.FONT_HERSHEY_TRIPLEX, 0.5, 255)
+                cv2.putText(frame, f"Z: {int(detection.spatialCoordinates.z)} mm", (x1 + 10, y1 + 80), cv2.FONT_HERSHEY_TRIPLEX, 0.5, 255)
+
+                cv2.rectangle(frame, (x1, y1), (x2, y2), color, cv2.FONT_HERSHEY_SIMPLEX)
+
+                if alert.value != AlertFactory.AlertIndex_None:
+                    continue
+
+                if person_distance < config["RED_ALERT_DISTANCE"]:
+                    alert.value = AlertFactory.AlertIndex_PedestrianFront
+                elif person_distance < config["YELLOW_ALERT_DISTANCE"]:
+                    alert.value = AlertFactory.AlertIndex_PedestrianFront
+
+            # crop black out of image
+            frame = frame[91:325, 0:416]
+
+            if config["PRODUCTION"] is True:
+                frame = cv2.resize(frame, (config["MainImage_Width"], config["MainImage_Height"]), interpolation=cv2.INTER_LINEAR)
+
             try:
-                label = labelMap[detection.label]
-            except:
-                label = detection.label
+                frame_queue.put_nowait(frame)
+            except queue.Full:
+                pass
 
-            if label != 'person':
-                continue
+    except Exception as e:
+        print(e)
+    finally:
+        status.value = 0
+        while not frame_queue.empty():
+            frame_queue.get_nowait()
+        frame_queue.close()            
 
-            person_distance = int(detection.spatialCoordinates.z)
-
-            cv2.putText(frame, str(label), (x1 + 10, y1 + 20), cv2.FONT_HERSHEY_TRIPLEX, 0.5, 255)
-            cv2.putText(frame, "{:.2f}".format(detection.confidence*100), (x1 + 10, y1 + 35), cv2.FONT_HERSHEY_TRIPLEX, 0.5, 255)
-            cv2.putText(frame, f"X: {int(detection.spatialCoordinates.x)} mm", (x1 + 10, y1 + 50), cv2.FONT_HERSHEY_TRIPLEX, 0.5, 255)
-            cv2.putText(frame, f"Y: {int(detection.spatialCoordinates.y)} mm", (x1 + 10, y1 + 65), cv2.FONT_HERSHEY_TRIPLEX, 0.5, 255)
-            cv2.putText(frame, f"Z: {int(detection.spatialCoordinates.z)} mm", (x1 + 10, y1 + 80), cv2.FONT_HERSHEY_TRIPLEX, 0.5, 255)
-
-            cv2.rectangle(frame, (x1, y1), (x2, y2), color, cv2.FONT_HERSHEY_SIMPLEX)
-
-            if alert.value != AlertFactory.AlertIndex_None:
-                continue
-
-            if person_distance < config["RED_ALERT_DISTANCE"]:
-                alert.value = AlertFactory.AlertIndex_PedestrianFront
-            elif person_distance < config["YELLOW_ALERT_DISTANCE"]:
-                alert.value = AlertFactory.AlertIndex_PedestrianFront
-
-        # crop black out of image
-        frame = frame[91:325, 0:416]
-
-        if config["PRODUCTION"] is True:
-            frame = cv2.resize(frame, (config["MainImage_Width"], config["MainImage_Height"]), interpolation=cv2.INTER_LINEAR)
-
-        t2 = datetime.now()
-        if (t2 - t1).seconds >= 60:
-            videoOutput.release()
-            video_index += 1
-            # 每30分鐘洗白重來
-            video_index = video_index % 10
-            fileName = f"videos/cam_{camera_id}_{video_index}.avi"
-            videoOutput = cv2.VideoWriter(fileName, video_code, frameRate, resolution)
-            t1 = t2
-        videoOutput.write(frame)
-        try:
-            frame_queue.put_nowait(frame)
-        except queue.Full:
-            pass
-
-        videoOutput.release()
 
 def main():
     frame_queue = mp.Queue(4)
