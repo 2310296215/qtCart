@@ -1,11 +1,9 @@
 from PyQt5.QtCore import QThread, pyqtSignal
 
 import numpy
-import multiprocessing as mp
 
 from model.AlertModel import WarnAlert
-from model.ProccessModel import TestCameraProcess
-from factories import CameraFactory
+from model.ProccessModel import TestCameraProcess, CombinedCameraProcess, YoloCameraProcess
 import yaml
 
 with open('config.yml', 'r') as stream:
@@ -23,12 +21,13 @@ class Worker(QThread):
     FrontCameraStatus = pyqtSignal(int)
 
     def run(self):
-        # LeftCamera = CombinedCameraProccess(config["LEFT_CAMERA_ID"], self.LeftImage, self.Alert, self.LeftCameraStatus)
-        # RightCamera = CombinedCameraProccess(config["RIGHT_CAMERA_ID"], self.RightImage, self.Alert, self.RightCameraStatus)
-        RightCamera = TestCameraProcess(config["RIGHT_CAMERA_ID"], self.RightImage, self.Alert, self.LeftCameraStatus)
-        # FrontCamera = YoloCameraProccess(config["FRONT_CAMERA_ID"], self.FrontImage, self.Alert, self.FrontCameraStatus)
+        TestCamera = TestCameraProcess(config["RIGHT_CAMERA_ID"], self.RightImage, self.Alert, self.RightCameraStatus)
 
-        Cameras = [RightCamera]
+        LeftCamera = CombinedCameraProcess(config["LEFT_CAMERA_ID"], self.LeftImage, self.Alert, self.LeftCameraStatus)
+        RightCamera = CombinedCameraProcess(config["RIGHT_CAMERA_ID"], self.RightImage, self.Alert, self.RightCameraStatus)
+        FrontCamera = YoloCameraProcess(config["FRONT_CAMERA_ID"], self.FrontImage, self.Alert, self.FrontCameraStatus)
+
+        Cameras = [TestCamera]
 
         for Camera in Cameras:
             Camera.runCamera()

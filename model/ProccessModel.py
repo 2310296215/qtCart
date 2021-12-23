@@ -54,7 +54,6 @@ class BasicCameraProccess(ICameraProcess):
         self.queue = mp.Queue(4)
 
     def runCamera(self):
-        print(self.camera)
         self.proccess = mp.Process(target=self.camera, args=(
             self.queue, self.command, self.alert, self.camera_id, self.status,))
 
@@ -75,7 +74,6 @@ class BasicCameraProccess(ICameraProcess):
         self.videoOutput.write(frame)
         self.t2 = datetime.now()
         if (self.t2 - self.t1).seconds >= int(config["Record_Seconds"]):
-            print("RELEASE")
             self.videoOutput.release()
             self.video_index += 1
             # 每30分鐘洗白重來
@@ -108,17 +106,20 @@ class BasicCameraProccess(ICameraProcess):
         self.videoOutput.release()
         self.StatusSignal.emit(0)
 
+
 class TestCameraProcess(BasicCameraProccess):
     def __init__(
             self, camera_id: str, ImageSignal: pyqtSignal, AlertSignal: pyqtSignal, StatusSignal: pyqtSignal) -> None:
         super().__init__(camera_id, ImageSignal, AlertSignal, StatusSignal)
         self.camera = TestCamera.runCamera
 
+
 class CombinedCameraProcess(BasicCameraProccess):
     def __init__(
             self, camera_id: str, ImageSignal: pyqtSignal, AlertSignal: pyqtSignal, StatusSignal: pyqtSignal) -> None:
         super().__init__(camera_id, ImageSignal, AlertSignal, StatusSignal)
         self.camera = CombinedCamera.runCamera
+
 
 class YoloCameraProcess(BasicCameraProccess):
     def __init__(
