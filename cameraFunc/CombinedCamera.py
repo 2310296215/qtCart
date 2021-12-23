@@ -318,7 +318,7 @@ def runCamera(frame_queue:mp.Queue, command:mp.Value, alert:mp.Value, camera_id:
     device = dai.Device(pipeline, device_info)
     print("Starting pipeline...")
     cam_out = device.getOutputQueue("cam_out", 1, True)
-    yolox_det_nn_helmet = device.getOutputQueue("yolox_det_nn_helmet")
+    yolox_det_nn_helmet = device.getOutputQueue(name="yolox_det_nn_helmet", maxSize=4, blocking=False)
     yolox_det_nn_phone = device.getOutputQueue("yolox_det_nn_phone", 4, False)
 
     frame = None
@@ -388,7 +388,9 @@ def runCamera(frame_queue:mp.Queue, command:mp.Value, alert:mp.Value, camera_id:
                     final_scores, final_cls_inds = dets[:, 4], dets[:, 5]
                     for cls_ind in final_cls_inds:
                         object_name = VOC_CLASSES[int(cls_ind)]
-                        if object_name == "helmet": helmet_count += 1
+                        if object_name == "helmet":
+                            helmet_count += 1
+
                 # print(f"phone: {phone_exists} people:{people_count} helm:{helmet_count}")
                 if phone_exists:
                     alert.value = AlertFactory.AlertIndex_NoPhone
@@ -408,7 +410,7 @@ def runCamera(frame_queue:mp.Queue, command:mp.Value, alert:mp.Value, camera_id:
     finally:
         while not frame_queue.empty():
             frame_queue.get_nowait()
-        frame_queue.close()    
+        frame_queue.close()
 
 
 def main():

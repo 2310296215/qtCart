@@ -30,6 +30,8 @@ class ViewWindow(QMainWindow, Ui_MainWindow):
 
     def setup(self, controller):
         self.qs = QSound('sound/welcome.wav', parent=self.labelSpeed)
+        # self.showMaximized()
+        
         if config["PRODUCTION"] is True:
             self.qs.play()
 
@@ -85,6 +87,7 @@ class ViewWindow(QMainWindow, Ui_MainWindow):
         self.setImg(Image, self.labelCamRight)
 
     def keyPressEvent(self, event):
+        print(self.frameGeometry().width(), self.frameGeometry().height())
         key = event.key()
         print(key)
 
@@ -95,7 +98,7 @@ class ViewWindow(QMainWindow, Ui_MainWindow):
 
         if key == 81:  # Q
             self.Worker.stop()
-        elif key == 87 and self.Worker.command.value == 0:  # W
+        elif key == 87 and self.Worker.ThreadActive:  # W
             self.Worker.start()
 
     def runAlert(self, WarnAlert):

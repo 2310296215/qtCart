@@ -12,19 +12,20 @@ def main():
     frame_queue = mp.Queue(4)
     command = mp.Value('i', 1)
     alert = mp.Value('i', 0)
+    status = mp.Value('i', 0)
     # camera_id = config["LEFT_CAMERA_ID"]
     camera_id = config["FRONT_CAMERA_ID"]
 
-    CameraProcess = CameraFactory.CameraFactory(CameraFactory.TextTestCamera)
+    # CameraProcess = CameraFactory.CameraFactory(CameraFactory.TextTestCamera)
     # CameraProcess = CameraFactory.CameraFactory(
     #     CameraFactory.TextCombinedCamera)
-    # CameraProcess = CameraFactory.CameraFactory(
-    #     CameraFactory.TextYoloCamera)
+    CameraProcess = CameraFactory.CameraFactory(
+        CameraFactory.TextYoloCamera)
     # CameraProcess = CameraFactory.CameraFactory(
     #     CameraFactory.TextFatigueCamera)
     proccess = mp.Process(
         target=CameraProcess,
-        args=(frame_queue, command, alert, camera_id,)
+        args=(frame_queue, command, alert, camera_id,status,)
         )
     proccess.start()
 

@@ -64,7 +64,8 @@ def runCamera(frame_queue: mp.Queue, command: mp.Value, alert: mp.Value, camera_
     manipOut.setStreamName("manip")
 
     # Properties
-    camRgb.setPreviewSize(1080, 720)
+    # camRgb.setPreviewSize(1080, 720)
+    camRgb.setPreviewSize(config["MainImage_Width"], config["MainImage_Height"])
     camRgb.setPreviewKeepAspectRatio(True)
     camRgb.setFps(10)
     camRgb.setResolution(dai.ColorCameraProperties.SensorResolution.THE_1080_P)
@@ -176,8 +177,8 @@ def runCamera(frame_queue: mp.Queue, command: mp.Value, alert: mp.Value, camera_
             # crop black out of image
             frame = frame[91:325, 0:416]
 
-            if config["PRODUCTION"] is True:
-                frame = cv2.resize(frame, (config["MainImage_Width"], config["MainImage_Height"]), interpolation=cv2.INTER_LINEAR)
+            # if config["PRODUCTION"] is True:
+            #     frame = cv2.resize(frame, (config["MainImage_Width"], config["MainImage_Height"]), interpolation=cv2.INTER_LINEAR)
 
             try:
                 frame_queue.put_nowait(frame)
