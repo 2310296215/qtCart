@@ -18,7 +18,7 @@ Spatial Tiny-yolo example
 '''
 
 
-def runCamera(frame_queue:mp.Queue, command:mp.Value, alert:mp.Value, camera_id: str, status:mp.Value):
+def runCamera(frame_queue: mp.Queue, command: mp.Value, alert: mp.Value, camera_id: str, status:mp.Value):
     nnBlobPath = 'cameraFunc/models/yolo-v4-tiny-tf_openvino_2021.4_6shave.blob'
 
     with open('config.yml', 'r') as stream:

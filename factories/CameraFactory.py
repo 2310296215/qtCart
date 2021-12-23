@@ -1,10 +1,11 @@
 from cameraFunc import YoloCamera, FatigueCam, PedestrianCamera, CombinedCamera, TestCamera
 
-TextTestCamera= "TestCamera"
+TextTestCamera = "TestCamera"
 TextYoloCamera = 'YoloCamera'
 TextPedestrianCamera = 'PedestrianCamera'
 TextFatigueCamera = 'FatigueCamera'
 TextCombinedCamera = 'CombinedCamera'
+
 
 def CameraFactory(CameraIndex):
     CameraDict = {
