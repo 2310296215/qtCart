@@ -4,7 +4,7 @@ import numpy
 import multiprocessing as mp
 
 from model.AlertModel import WarnAlert
-from model.ProccessModel import BasicCameraProccess
+from model.ProccessModel import TestCameraProcess
 from factories import CameraFactory
 import yaml
 
@@ -22,20 +22,11 @@ class Worker(QThread):
     RightCameraStatus = pyqtSignal(int)
     FrontCameraStatus = pyqtSignal(int)
 
-    command = mp.Value('i', 0)
-
     def run(self):
-
-        self.command.value = 1
-
-        TestCamera = CameraFactory.CameraFactory(CameraFactory.TextTestCamera)
-        CombinedCam = CameraFactory.CameraFactory(CameraFactory.TextCombinedCamera)
-        YoloCam = CameraFactory.CameraFactory(CameraFactory.TextYoloCamera)
-
-        # LeftCamera = BasicCameraProccess(self.command, CombinedCam, config["LEFT_CAMERA_ID"], self.LeftImage, self.Alert, self.LeftCameraStatus)
-        # RightCamera = BasicCameraProccess(self.command, CombinedCam, config["RIGHT_CAMERA_ID"], self.RightImage, self.Alert, self.RightCameraStatus)
-        RightCamera = BasicCameraProccess(self.command, TestCamera, config["RIGHT_CAMERA_ID"], self.RightImage, self.Alert, self.LeftCameraStatus)
-        # FrontCamera = BasicCameraProccess(self.command, YoloCam, config["FRONT_CAMERA_ID"], self.FrontImage, self.Alert, self.FrontCameraStatus)     
+        # LeftCamera = CombinedCameraProccess(config["LEFT_CAMERA_ID"], self.LeftImage, self.Alert, self.LeftCameraStatus)
+        # RightCamera = CombinedCameraProccess(config["RIGHT_CAMERA_ID"], self.RightImage, self.Alert, self.RightCameraStatus)
+        RightCamera = TestCameraProcess(config["RIGHT_CAMERA_ID"], self.RightImage, self.Alert, self.LeftCameraStatus)
+        # FrontCamera = YoloCameraProccess(config["FRONT_CAMERA_ID"], self.FrontImage, self.Alert, self.FrontCameraStatus)
 
         Cameras = [RightCamera]
 
@@ -56,5 +47,4 @@ class Worker(QThread):
         self.quit()
 
     def stop(self):
-        self.command.value = 0
         self.ThreadActive = False

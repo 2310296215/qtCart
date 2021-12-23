@@ -68,7 +68,7 @@ class ViewWindow(QMainWindow, Ui_MainWindow):
 
     @pyqtSlot(int)
     def UpdateFrontCameraStatus(self, status):
-        self.checkBoxCamFront.setChecked(status)        
+        self.checkBoxCamFront.setChecked(status)
 
     @pyqtSlot(np.ndarray)
     def UpdateLeftSlot(self, Image):

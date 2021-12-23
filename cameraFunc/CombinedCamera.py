@@ -4,10 +4,7 @@ import cv2
 import depthai as dai
 import numpy as np
 import queue
-from datetime import datetime
-
 import yaml
-
 from factories import AlertFactory
 
 with open('config.yml', 'r') as stream:
@@ -97,6 +94,7 @@ def toTensorResult(packet):
         else:
             print("Unsupported tensor layer type: {}".format(tensor.dataType))
     return data
+
 
 def vis(img, boxes, scores, cls_ids, conf=0.5, class_names=None):
 
