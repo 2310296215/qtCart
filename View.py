@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import QTimer, Qt, pyqtSlot
 from PyQt5.uic import loadUi
-from ui.ui_qtcart import Ui_MainWindow
+from ui.newUi import Ui_MainWindow
 
 import numpy as np
 import cv2
@@ -20,65 +20,92 @@ class ViewWindow(QMainWindow, Ui_MainWindow):
         super().__init__(parent)
         self.setupUi(self)
 
-        self.defaultStyleSheet = "background-color: black; font-family:微軟正黑體; font-size:40pt;font-weight: bold; color:white"
+        self.defaultStyleSheet = "background-color: black; font-family:微軟正黑體; font-size:28pt;font-weight: bold; color:white"
+        self.styleSheetStatusOn = "background-color: black; font-family:微軟正黑體; color: white"
+        self.styleSheetStatusOff = "background-color: red; font-family:微軟正黑體; color: black"
         self.defaultWarnMessage = "警示訊息"
         self.defaultFrontLabelText = "前鏡頭"
-        self.defaultRearLabelText = "後鏡頭"
-        self.defaultDriverLabelText = "駕駛鏡頭"
+        self.defaultLeftLabelText = "左鏡頭"
+        self.defaultRightLabelText = "右鏡頭"
 
     def setup(self, controller):
-        self.btnStart.clicked.connect(controller.btnStart_clicked)
-        self.btnStop.clicked.connect(controller.btnStop_clicked)
-        self.qs = QSound('sound/welcome.wav', parent=self.labelMessage)
+        self.qs = QSound('sound/welcome.wav', parent=self.labelSpeed)
+        self.controller = controller
+        # self.showMaximized()
+
         if config["PRODUCTION"] is True:
-            self.showMaximized()
-            # self.LabelFront.setStyleSheet("background-color: yellow")
-            # self.LabelRear.setStyleSheet("background-color: red")
             self.qs.play()
+
 
     @pyqtSlot()
     def setDefaultView(self):
+        self.labelCamLeft.clear()
+        self.labelCamRight.clear()
 
-        self.LabelFront.clear()
-        self.LabelRear.clear()
-        self.LabelDriver.clear()
+        self.labelCamLeft.setText(self.defaultLeftLabelText)
+        self.labelCamRight.setText(self.defaultRightLabelText)
 
-        self.LabelFront.setText(self.defaultFrontLabelText)
-        self.LabelRear.setText(self.defaultRearLabelText)
-        self.LabelDriver.setText(self.defaultDriverLabelText)
-        self.labelMessage.setText(self.defaultWarnMessage)
+    @pyqtSlot(int)
+    def UpdateRightCameraStatus(self, status):
+        self.checkBoxCamRight.setChecked(status)
+        self.checkBoxCamRight.setStyleSheet(self.styleSheetStatusOn)
+        if status == 0:
+            self.setDefaultView()
+            self.checkBoxCamRight.setStyleSheet(self.styleSheetStatusOff)
 
+    @pyqtSlot(int)
+    def UpdateLeftCameraStatus(self, status):
+        self.checkBoxCamLeft.setChecked(status)
+        self.checkBoxCamLeft.setStyleSheet(self.styleSheetStatusOn)
+        if status == 0:
+            self.setDefaultView()
+            self.checkBoxCamLeft.setStyleSheet(self.styleSheetStatusOff)
+
+    @pyqtSlot(int)
+    def UpdateFrontCameraStatus(self, status):
+        self.checkBoxCamFront.setChecked(status)
+        self.checkBoxCamFront.setStyleSheet(self.styleSheetStatusOn)
+        if status == 0:
+            self.checkBoxCamFront.setStyleSheet(self.styleSheetStatusOff)
+
+    @pyqtSlot(np.ndarray)
+    def UpdateLeftSlot(self, Image):
+        self.setImg(Image, self.labelCamLeft)
+
+    @pyqtSlot(np.ndarray)
+    def UpdateRightSlot(self, Image):
+        self.setImg(Image, self.labelCamRight)
 
     @pyqtSlot(np.ndarray)
     def UpdateFrontSlot(self, Image):
-        self.setImg(Image, self.LabelFront)
+        pass
 
-    @pyqtSlot(np.ndarray)
-    def UpdateRearSlot(self, Image):
-        self.setImg(Image, self.LabelRear)
+    @pyqtSlot(str)
+    def UpdateCpuUsage(self, value):
+        self.labelCpuNum.setText(value)
 
-    @pyqtSlot(np.ndarray)
-    def UpdateDriverSlot(self, Image):
-        self.setImg(Image, self.LabelDriver)
+    @pyqtSlot(str)
+    def UpdateGpuUsage(self, value):
+        self.labelGpuNum.setText(value)      
+
 
     def keyPressEvent(self, event):
         key = event.key()
-        print(key)
+        self.controller.keyPress(key)
 
     def runAlert(self, WarnAlert):
         if not self.qs.isFinished():
             return
 
-        self.labelMessage.setText(WarnAlert.warn_message)
+        self.labelSpeed.setText(WarnAlert.warn_message)
         sound_file = WarnAlert.warn_file
-        self.qs = QSound(sound_file, parent=self.labelMessage)
+        self.qs = QSound(sound_file, parent=self.labelSpeed)
         self.qs.play()
 
         for i in range(0, 1800, 600):
-            QTimer.singleShot((0.5 * i), lambda: self.labelMessage.setStyleSheet(
-                f"background-color: {WarnAlert.warn_color}; font-family:微軟正黑體; font-size:40pt;font-weight: bold;"))
+            QTimer.singleShot((0.5 * i), lambda: self.labelSpeed.setStyleSheet(self.defaultStyleSheet.replace("black", WarnAlert.warn_color)))
             QTimer.singleShot(
-                i, lambda: self.labelMessage.setStyleSheet(self.defaultStyleSheet))
+                i, lambda: self.labelSpeed.setStyleSheet(self.defaultStyleSheet))
 
     def setImg(self, frame, label):
 

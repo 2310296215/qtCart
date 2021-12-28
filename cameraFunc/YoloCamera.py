@@ -189,6 +189,6 @@ def runCamera(frame_queue: mp.Queue, command: mp.Value, alert: mp.Value, camera_
         print(e)
     finally:
         status.value = 0
-        while not frame_queue.empty():
-            frame_queue.get_nowait()
-        frame_queue.close()
+        # while not frame_queue.empty():
+        #     frame_queue.get_nowait()
+        # frame_queue.close()

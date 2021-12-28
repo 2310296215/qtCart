@@ -23,8 +23,8 @@ YAWN_COUNT: 5
 FATIGUE_TOTAL_COUNT: 8
 
 # 234:416
-MainImage_Height: 540
-MainImage_Width: 960
+MainImage_Height: 234
+MainImage_Width: 416
 DriverImage_Height: 420
 DriverImage_Width: 540
 

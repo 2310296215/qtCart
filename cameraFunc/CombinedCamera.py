@@ -313,6 +313,8 @@ def runCamera(frame_queue:mp.Queue, command:mp.Value, alert:mp.Value, camera_id:
 
     found, device_info = dai.Device.getDeviceByMxId(camera_id)
     if not found:
+        command.value = 0
+        status.value = 0
         raise RuntimeError("device not found")
 
     device = dai.Device(pipeline, device_info)
@@ -336,7 +338,6 @@ def runCamera(frame_queue:mp.Queue, command:mp.Value, alert:mp.Value, camera_id:
             if yolox_det_data_phone is not None:
                 res = toTensorResult(yolox_det_data_phone).get("output")
                 predictions = demo_postprocess_phone(res, size, p6=False)[0]
-                # predictions = res[0]
                 boxes = predictions[:, :4]
                 scores = predictions[:, 4, None] * predictions[:, 5:]
 
@@ -407,39 +408,7 @@ def runCamera(frame_queue:mp.Queue, command:mp.Value, alert:mp.Value, camera_id:
                 pass
 
     except Exception as e:
-        print(e)
-        status.value = 0
+        print(f"combined camera error :{e}")
     finally:
-        while not frame_queue.empty():
-            frame_queue.get_nowait()
-        frame_queue.close()
-
-
-def main():
-    frame_queue = mp.Queue(4)
-    command = mp.Value('i', 1)
-    alert = mp.Value('i', 99)
-    camera_id = config["LEFT_CAMERA_ID"]
-    print(camera_id)
-
-    proccess = mp.Process(target=runCamera, args=(frame_queue, command, alert, camera_id, ))
-    proccess.start()
-
-    while True:
-        try:
-            frame = frame_queue.get_nowait()
-            cv2.imshow('frame', frame)
-        except queue.Empty or queue.Full:
-            pass
-
-        if alert.value != AlertFactory.AlertIndex_None:
-            print(AlertFactory.AlertList[alert.value])
-
-        if cv2.waitKey(1) == ord('q'):
-            command.value = 0
-            break
-
-    proccess.kill()
-
-if __name__ == '__main__':
-    main()
+        status.value = 0
+        print("process ended")

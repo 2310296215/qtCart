@@ -10,7 +10,7 @@ with open('config.yml', 'r') as stream:
     config = yaml.load(stream, Loader=yaml.FullLoader)
 
 
-class Worker(QThread):
+class CameraWorker(QThread):
     FrontImage = pyqtSignal(numpy.ndarray)
     LeftImage = pyqtSignal(numpy.ndarray)
     RightImage = pyqtSignal(numpy.ndarray)
