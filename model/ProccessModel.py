@@ -103,6 +103,7 @@ class BasicCameraProccess(ICameraProcess):
         self.alert.value = AlertFactory.AlertIndex_None
 
     def endCamera(self):
+        self.command.value = 0
         self.videoOutput.release()
         self.StatusSignal.emit(0)
 
@@ -113,6 +114,14 @@ class TestCameraProcess(BasicCameraProccess):
         super().__init__(camera_id, ImageSignal, AlertSignal, StatusSignal)
         self.camera = TestCamera.runCamera
 
+    def setRecorder(self):
+        self.t1 = datetime.now()
+        self.t2 = self.t1
+        fileName = f"videos/cam_{self.camera_id}_{self.video_index}.avi"
+        video_code = cv2.VideoWriter_fourcc(*'XVID')
+        frameRate = 20
+        resolution = (640, 480) #解析度不同
+        self.videoOutput = cv2.VideoWriter(fileName, video_code, frameRate, resolution)
 
 class CombinedCameraProcess(BasicCameraProccess):
     def __init__(

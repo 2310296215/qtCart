@@ -11,3 +11,16 @@ class MainController:
         self.view.show()
         self.view.prepareWorker(Worker)
         self.view.Worker.start()
+
+    def keyPress(self, key):
+        print(f"keyPress: {key}")
+
+        if key == 72:
+            self.checkBoxCamLeft.setChecked(1)
+        elif key == 71:
+            self.checkBoxCamLeft.setChecked(0)
+
+        if key == 81:  # Q
+            self.Worker.stop()
+        elif key == 87 and self.Worker.ThreadActive:  # W
+            self.Worker.start()

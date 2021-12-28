@@ -30,8 +30,9 @@ class ViewWindow(QMainWindow, Ui_MainWindow):
 
     def setup(self, controller):
         self.qs = QSound('sound/welcome.wav', parent=self.labelSpeed)
+        self.controller = controller
         # self.showMaximized()
-        
+
         if config["PRODUCTION"] is True:
             self.qs.play()
 
@@ -87,19 +88,8 @@ class ViewWindow(QMainWindow, Ui_MainWindow):
         self.setImg(Image, self.labelCamRight)
 
     def keyPressEvent(self, event):
-        print(self.frameGeometry().width(), self.frameGeometry().height())
         key = event.key()
-        print(key)
-
-        if key == 72:
-            self.checkBoxCamLeft.setChecked(1)
-        elif key == 71:
-            self.checkBoxCamLeft.setChecked(0)
-
-        if key == 81:  # Q
-            self.Worker.stop()
-        elif key == 87 and self.Worker.ThreadActive:  # W
-            self.Worker.start()
+        self.controller.keyPress(key)
 
     def runAlert(self, WarnAlert):
         if not self.qs.isFinished():
@@ -112,7 +102,6 @@ class ViewWindow(QMainWindow, Ui_MainWindow):
 
         for i in range(0, 1800, 600):
             QTimer.singleShot((0.5 * i), lambda: self.labelSpeed.setStyleSheet(self.defaultStyleSheet.replace("black", WarnAlert.warn_color)))
-                # f"background-color: {WarnAlert.warn_color}; font-family:微軟正黑體; font-size:20pt;font-weight: bold;"))
             QTimer.singleShot(
                 i, lambda: self.labelSpeed.setStyleSheet(self.defaultStyleSheet))
 
