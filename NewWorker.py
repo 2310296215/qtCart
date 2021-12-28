@@ -23,11 +23,11 @@ class Worker(QThread):
     def run(self):
         TestCamera = TestCameraProcess("TEST_CAMERA_ID", self.RightImage, self.Alert, self.RightCameraStatus)
 
-        # LeftCamera = CombinedCameraProcess(config["LEFT_CAMERA_ID"], self.LeftImage, self.Alert, self.LeftCameraStatus)
-        # RightCamera = CombinedCameraProcess(config["RIGHT_CAMERA_ID"], self.RightImage, self.Alert, self.RightCameraStatus)
-        # FrontCamera = YoloCameraProcess(config["FRONT_CAMERA_ID"], self.FrontImage, self.Alert, self.FrontCameraStatus)
+        LeftCamera = CombinedCameraProcess(config["LEFT_CAMERA_ID"], self.LeftImage, self.Alert, self.LeftCameraStatus)
+        RightCamera = CombinedCameraProcess(config["RIGHT_CAMERA_ID"], self.RightImage, self.Alert, self.RightCameraStatus)
+        FrontCamera = YoloCameraProcess(config["FRONT_CAMERA_ID"], self.FrontImage, self.Alert, self.FrontCameraStatus)
 
-        Cameras = [TestCamera]
+        Cameras = [LeftCamera, RightCamera, FrontCamera]
 
         for Camera in Cameras:
             Camera.runCamera()
@@ -35,6 +35,7 @@ class Worker(QThread):
         self.ThreadActive = True
 
         while self.ThreadActive:
+
             for Camera in Cameras:
                 Camera.getStatus()
                 Camera.getFrame()

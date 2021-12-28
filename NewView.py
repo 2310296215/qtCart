@@ -87,6 +87,15 @@ class ViewWindow(QMainWindow, Ui_MainWindow):
     def UpdateRightSlot(self, Image):
         self.setImg(Image, self.labelCamRight)
 
+    @pyqtSlot(str)
+    def UpdateCpuUsage(self, value):
+        self.labelCpuNum.setText(value)
+
+    @pyqtSlot(str)
+    def UpdateGpuUsage(self, value):
+        self.labelGpuNum.setText(value)      
+
+
     def keyPressEvent(self, event):
         key = event.key()
         self.controller.keyPress(key)
