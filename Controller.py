@@ -31,11 +31,6 @@ class MainController:
     def keyPress(self, key):
         print(f"keyPress: {key}")
 
-        if key == 72:
-            self.checkBoxCamLeft.setChecked(1)
-        elif key == 71:
-            self.checkBoxCamLeft.setChecked(0)
-
         if key == 81:  # Q
             self.cameraWorker.stop()
             self.tegra.stop()

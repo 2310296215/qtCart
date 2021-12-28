@@ -310,7 +310,7 @@ def runCamera(frame_queue:mp.Queue, command:mp.Value, alert:mp.Value, camera_id:
     cam.preview.link(manip.inputImage)
     manip.out.link(yoloDet_helmet.input)
     manip.out.link(yoloDet_phone.input)
-
+    print(f"looking for device at {camera_id}")
     found, device_info = dai.Device.getDeviceByMxId(camera_id)
     if not found:
         command.value = 0

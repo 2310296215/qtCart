@@ -14,16 +14,12 @@ def main():
     command = mp.Value('i', 1)
     alert = mp.Value('i', 0)
     status = mp.Value('i', 0)
-    camera_id = config["RIGHT_CAMERA_ID"]
+    camera_id = config["FRONT_CAMERA_ID"]
 
-    # camera_id = config["FRONT_CAMERA_ID"]
+    # camera_id = config["LEFT_CAMERA_ID"]
+    CameraProcess = YoloCamera.runCamera
+    # CameraProcess = CombinedCamera.runCamera
 
-    # CameraProcess = CameraFactory.CameraFactory(CameraFactory.TextTestCamera)
-    CameraProcess = CombinedCamera.runCamera
-    # CameraProcess = CameraFactory.CameraFactory(
-    #     CameraFactory.TextYoloCamera)
-    # CameraProcess = CameraFactory.CameraFactory(
-    #     CameraFactory.TextFatigueCamera)
     command.value = 1
     proccess = mp.Process(
         target=CameraProcess,
