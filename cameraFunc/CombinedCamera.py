@@ -267,15 +267,15 @@ def to_planar(arr: np.ndarray, input_size: tuple = None) -> np.ndarray:
 
 def frame_norm(frame, bbox):
     return (
-        np.clip(np.array(bbox), 0, 1)
-        * np.array([*frame.shape[:2], *frame.shape[:2]])[::-1]
+        np.clip(np.array(bbox), 0, 1) * np.array([*frame.shape[:2], *frame.shape[:2]])[::-1]
     ).astype(int)
+
 
 def runCamera(frame_queue:mp.Queue, command:mp.Value, alert:mp.Value, camera_id: str, status:mp.Value):
     pipeline = dai.Pipeline()
 
     cam = pipeline.createColorCamera()
-    cam.setPreviewSize(1280, 720)
+    cam.setPreviewSize(config["MainImage_Width"], config["MainImage_Height"])
     cam.setResolution(dai.ColorCameraProperties.SensorResolution.THE_1080_P)
     cam.setFps(10)
     cam.setInterleaved(False)
@@ -359,8 +359,10 @@ def runCamera(frame_queue:mp.Queue, command:mp.Value, alert:mp.Value, camera_id:
                     final_scores, final_cls_inds = dets[:, 4], dets[:, 5]
                     for cls_ind in final_cls_inds:
                         object_name = CLASSES[int(cls_ind)]
-                        if object_name == "phone": phone_exists = True
-                        elif object_name == "person": people_count += 1
+                        if object_name == "phone":
+                            phone_exists = True
+                        elif object_name == "person":
+                            people_count += 1
 
             if yolox_det_data_helmet is not None:
                 res = to_tensor_result(yolox_det_data_helmet).get("output")

@@ -21,13 +21,13 @@ class Worker(QThread):
     FrontCameraStatus = pyqtSignal(int)
 
     def run(self):
-        TestCamera = TestCameraProcess(config["RIGHT_CAMERA_ID"], self.RightImage, self.Alert, self.RightCameraStatus)
+        TestCamera = TestCameraProcess("TEST_CAMERA_ID", self.RightImage, self.Alert, self.RightCameraStatus)
 
-        LeftCamera = CombinedCameraProcess(config["LEFT_CAMERA_ID"], self.LeftImage, self.Alert, self.LeftCameraStatus)
-        RightCamera = CombinedCameraProcess(config["RIGHT_CAMERA_ID"], self.RightImage, self.Alert, self.RightCameraStatus)
-        FrontCamera = YoloCameraProcess(config["FRONT_CAMERA_ID"], self.FrontImage, self.Alert, self.FrontCameraStatus)
+        # LeftCamera = CombinedCameraProcess(config["LEFT_CAMERA_ID"], self.LeftImage, self.Alert, self.LeftCameraStatus)
+        # RightCamera = CombinedCameraProcess(config["RIGHT_CAMERA_ID"], self.RightImage, self.Alert, self.RightCameraStatus)
+        # FrontCamera = YoloCameraProcess(config["FRONT_CAMERA_ID"], self.FrontImage, self.Alert, self.FrontCameraStatus)
 
-        Cameras = []
+        Cameras = [TestCamera]
 
         for Camera in Cameras:
             Camera.runCamera()
