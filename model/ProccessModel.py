@@ -47,7 +47,7 @@ class BasicCameraProccess(ICameraProcess):
         self.StatusSignal = StatusSignal
 
         self.camera_id = camera_id
-        self.video_index = 1
+        self.video_index = 0
         self.command = mp.Value('i', 0)
         self.status = mp.Value('i', 0)
         self.alert = mp.Value('i', 99)

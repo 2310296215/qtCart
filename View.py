@@ -89,10 +89,6 @@ class ViewWindow(QMainWindow, Ui_MainWindow):
     def UpdateGpuUsage(self, value):
         self.labelGpuNum.setText(value)
 
-    def keyPressEvent(self, event):
-        key = event.key()
-        self.controller.keyPress(key)
-
     @pyqtSlot(WarnAlert)
     def runAlert(self, WarnAlert):
         if not self.qs.isFinished():
@@ -107,6 +103,10 @@ class ViewWindow(QMainWindow, Ui_MainWindow):
             QTimer.singleShot((0.5 * i), lambda: self.labelSpeed.setStyleSheet(self.defaultStyleSheet.replace("black", WarnAlert.warn_color)))
             QTimer.singleShot(
                 i, lambda: self.labelSpeed.setStyleSheet(self.defaultStyleSheet))
+
+    def keyPressEvent(self, event):
+        key = event.key()
+        self.controller.keyPress(key)
 
     def setImg(self, frame, label):
         Image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)

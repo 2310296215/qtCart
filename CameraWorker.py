@@ -21,7 +21,7 @@ class CameraWorker(QThread):
     FrontCameraStatus = pyqtSignal(int)
 
     def run(self):
-        TestCamera = TestCameraProcess("TEST_CAMERA_ID", self.RightImage, self.Alert, self.RightCameraStatus)
+        # TestCamera = TestCameraProcess("TEST_CAMERA_ID", self.RightImage, self.Alert, self.RightCameraStatus)
 
         LeftCamera = CombinedCameraProcess(config["LEFT_CAMERA_ID"], self.LeftImage, self.Alert, self.LeftCameraStatus)
         RightCamera = CombinedCameraProcess(config["RIGHT_CAMERA_ID"], self.RightImage, self.Alert, self.RightCameraStatus)
