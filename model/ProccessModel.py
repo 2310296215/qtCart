@@ -4,7 +4,6 @@ from datetime import datetime
 from factories import AlertFactory
 from PyQt5.QtCore import pyqtSignal
 import multiprocessing as mp
-from sys import platform
 import queue
 import yaml
 
@@ -114,10 +113,7 @@ class BasicCameraProccess(ICameraProcess):
         # self.queue.close()
         # print("closed")
 
-        if platform == "linux":
-            self.proccess.terminate()
-        else:
-            self.proccess.kill()
+        self.proccess.terminate()
 
 
 class TestCameraProcess(BasicCameraProccess):
@@ -132,8 +128,9 @@ class TestCameraProcess(BasicCameraProccess):
         fileName = f"videos/cam_{self.camera_id}_{self.video_index}.avi"
         video_code = cv2.VideoWriter_fourcc(*'XVID')
         frameRate = 20
-        resolution = (640, 480) #解析度不同
+        resolution = (640, 480)  # 解析度不同
         self.videoOutput = cv2.VideoWriter(fileName, video_code, frameRate, resolution)
+
 
 class CombinedCameraProcess(BasicCameraProccess):
     def __init__(

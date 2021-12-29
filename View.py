@@ -11,6 +11,8 @@ import numpy as np
 import cv2
 import yaml
 
+from model.AlertModel import WarnAlert
+
 with open('config.yml', 'r') as stream:
     config = yaml.load(stream, Loader=yaml.FullLoader)
 
@@ -35,7 +37,6 @@ class ViewWindow(QMainWindow, Ui_MainWindow):
 
         if config["PRODUCTION"] is True:
             self.qs.play()
-
 
     @pyqtSlot()
     def setDefaultView(self):
@@ -86,13 +87,13 @@ class ViewWindow(QMainWindow, Ui_MainWindow):
 
     @pyqtSlot(str)
     def UpdateGpuUsage(self, value):
-        self.labelGpuNum.setText(value)      
-
+        self.labelGpuNum.setText(value)
 
     def keyPressEvent(self, event):
         key = event.key()
         self.controller.keyPress(key)
 
+    @pyqtSlot(WarnAlert)
     def runAlert(self, WarnAlert):
         if not self.qs.isFinished():
             return
@@ -108,7 +109,6 @@ class ViewWindow(QMainWindow, Ui_MainWindow):
                 i, lambda: self.labelSpeed.setStyleSheet(self.defaultStyleSheet))
 
     def setImg(self, frame, label):
-
         Image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         Pic = QImage(Image.data, Image.shape[1],
                      Image.shape[0], QImage.Format_RGB888)
