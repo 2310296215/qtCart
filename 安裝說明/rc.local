@@ -1,0 +1,5 @@
+#!/bin/bash
+sleep 10
+ifconfig eth0 192.168.1.203 netmask 255.255.255.0 up
+
+exit 0
