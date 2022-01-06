@@ -330,6 +330,7 @@ def runCamera(frame_queue:mp.Queue, command:mp.Value, alert:mp.Value, camera_id:
             phone_exists = False
             helmet_count = 0
             people_count = 0
+            head_count = 0
 
             yolox_det_data_helmet = yolox_det_nn_helmet.tryGet()
             frame = cam_out.get().getCvFrame()
@@ -393,14 +394,18 @@ def runCamera(frame_queue:mp.Queue, command:mp.Value, alert:mp.Value, camera_id:
                         object_name = VOC_CLASSES[int(cls_ind)]
                         if object_name == "helmet":
                             helmet_count += 1
+                        elif object_name == "head":
+                            head_count +=1
 
-                # print(f"phone: {phone_exists} people:{people_count} helm:{helmet_count}")
-                if phone_exists:
-                    alert.value = AlertFactory.AlertIndex_NoPhone
-                elif people_count > 1:
-                    alert.value = AlertFactory.AlertIndex_PedestrianRear
-                elif helmet_count < 1 and people_count > 0:
-                    alert.value = AlertFactory.AlertIndex_NoHelmet
+            if alert.value != AlertFactory.AlertIndex_None:
+                continue
+            # print(f"phone: {phone_exists} people:{people_count} helm:{helmet_count}")
+            if phone_exists:
+                alert.value = AlertFactory.AlertIndex_NoPhone
+            elif people_count > 1:
+                alert.value = AlertFactory.AlertIndex_PedestrianRear
+            elif helmet_count < 1 and head_count > 0:
+                alert.value = AlertFactory.AlertIndex_NoHelmet
 
             try:
                 frame_queue.put_nowait(frame)
