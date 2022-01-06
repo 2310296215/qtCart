@@ -101,14 +101,21 @@ class ViewWindow(QMainWindow, Ui_MainWindow):
             if not alert.isFinished():
                 return
 
-        self.alert_list[WarnAlert.alertIndex].play()
+        current_alert = self.alert_list[WarnAlert.alertIndex]
+        current_alert.play()
 
         self.labelSpeed.setText(WarnAlert.warn_message)
 
-        for i in range(0, 1800, 600):
+        for i in range(0, 2400, 600):
+            print(i)
+            if i > 1500:
+                QTimer.singleShot(i, lambda: self.labelSpeed.setText(self.defaultWarnMessage))
+                continue
             QTimer.singleShot((0.5 * i), lambda: self.labelSpeed.setStyleSheet(self.defaultStyleSheet.replace("black", WarnAlert.warn_color)))
             QTimer.singleShot(
                 i, lambda: self.labelSpeed.setStyleSheet(self.defaultStyleSheet))
+
+
 
     def keyPressEvent(self, event):
         key = event.key()
