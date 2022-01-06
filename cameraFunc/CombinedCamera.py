@@ -6,6 +6,7 @@ import numpy as np
 import queue
 import yaml
 from factories import AlertFactory
+from datetime import datetime, time
 
 with open('config.yml', 'r') as stream:
     config = yaml.load(stream, Loader=yaml.FullLoader)
@@ -444,6 +445,7 @@ def runCamera(frame_queue:mp.Queue, command:mp.Value, alert:mp.Value, camera_id:
     yolox_det_nn_phone = device.getOutputQueue("yolox_det_nn_phone", 4, False)
 
     frame = None
+    time_without_helmet = datetime.now();
     try:
         while command.value != 0:
             status.value = 1
@@ -541,12 +543,16 @@ def runCamera(frame_queue:mp.Queue, command:mp.Value, alert:mp.Value, camera_id:
                 alert.value = AlertFactory.AlertIndex_NoPhone
             elif people_count > 1:
                 alert.value = AlertFactory.AlertIndex_PedestrianRear
+
+            if helmet_count > 0:
+                time_without_helmet = datetime.now()
             elif helmet_count < 1 and head_count > 0:
-                alert.value = AlertFactory.AlertIndex_NoHelmet
+                if (datetime.now() - time_without_helmet).seconds > config["SecondWithoutHelmet"]:
+                    alert.value = AlertFactory.AlertIndex_NoHelmet
 
             try:
                 if config["Show_Debug_Frame"]:
-                    frame =frame_debug
+                    frame = frame_debug
                 frame_queue.put_nowait(frame)
             except queue.Full:
                 pass
