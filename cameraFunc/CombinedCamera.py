@@ -18,7 +18,7 @@ shaves = 6
 size = (320, 320)
 CLASSES = ["phone", "person", "head"]
 
-__all__ = ["vis"]
+__all__ = ["vis_helmet"]
 
 
 def multiclass_nms_phone(boxes, scores, nms_thr, score_thr):
@@ -96,7 +96,7 @@ def toTensorResult(packet):
     return data
 
 
-def vis(img, boxes, scores, cls_ids, conf=0.5, class_names=None):
+def vis_phone(img, boxes, scores, cls_ids, conf=0.5, class_names=None):
 
     for i in range(len(boxes)):
         box = boxes[i]
@@ -110,13 +110,133 @@ def vis(img, boxes, scores, cls_ids, conf=0.5, class_names=None):
         y1 = round(box[3])
 
         color = (_COLORS[cls_id] * 255).astype(np.uint8).tolist()
+        text = '{}:{:.1f}%'.format(class_names[cls_id], score * 100)
+        txt_color = (0, 0, 0) if np.mean(_COLORS[cls_id]) > 0.5 else (255, 255, 255)
+        font = cv2.FONT_HERSHEY_SIMPLEX
+
+        txt_size = cv2.getTextSize(text, font, 0.4, 1)[0]
+        cv2.rectangle(img, (x0, y0), (x1, y1), color, 2)
+
+        txt_bk_color = (_COLORS[cls_id] * 255 * 0.7).astype(np.uint8).tolist()
+        cv2.rectangle(
+            img,
+            (x0, y0 + 1),
+            (x0 + txt_size[0] + 1, y0 + int(1.5*txt_size[1])),
+            txt_bk_color,
+            -1
+        )
+        cv2.putText(img, text, (x0, y0 + txt_size[1]), font, 0.4, txt_color, thickness=1)
+
+    return img
+
+
+_COLORS = np.array(
+    [
+        0.000, 0.447, 0.741,
+        0.850, 0.325, 0.098,
+        0.929, 0.694, 0.125,
+        0.494, 0.184, 0.556,
+        0.466, 0.674, 0.188,
+        0.301, 0.745, 0.933,
+        0.635, 0.078, 0.184,
+        0.300, 0.300, 0.300,
+        0.600, 0.600, 0.600,
+        1.000, 0.000, 0.000,
+        1.000, 0.500, 0.000,
+        0.749, 0.749, 0.000,
+        0.000, 1.000, 0.000,
+        0.000, 0.000, 1.000,
+        0.667, 0.000, 1.000,
+        0.333, 0.333, 0.000,
+        0.333, 0.667, 0.000,
+        0.333, 1.000, 0.000,
+        0.667, 0.333, 0.000,
+        0.667, 0.667, 0.000,
+        0.667, 1.000, 0.000,
+        1.000, 0.333, 0.000,
+        1.000, 0.667, 0.000,
+        1.000, 1.000, 0.000,
+        0.000, 0.333, 0.500,
+        0.000, 0.667, 0.500,
+        0.000, 1.000, 0.500,
+        0.333, 0.000, 0.500,
+        0.333, 0.333, 0.500,
+        0.333, 0.667, 0.500,
+        0.333, 1.000, 0.500,
+        0.667, 0.000, 0.500,
+        0.667, 0.333, 0.500,
+        0.667, 0.667, 0.500,
+        0.667, 1.000, 0.500,
+        1.000, 0.000, 0.500,
+        1.000, 0.333, 0.500,
+        1.000, 0.667, 0.500,
+        1.000, 1.000, 0.500,
+        0.000, 0.333, 1.000,
+        0.000, 0.667, 1.000,
+        0.000, 1.000, 1.000,
+        0.333, 0.000, 1.000,
+        0.333, 0.333, 1.000,
+        0.333, 0.667, 1.000,
+        0.333, 1.000, 1.000,
+        0.667, 0.000, 1.000,
+        0.667, 0.333, 1.000,
+        0.667, 0.667, 1.000,
+        0.667, 1.000, 1.000,
+        1.000, 0.000, 1.000,
+        1.000, 0.333, 1.000,
+        1.000, 0.667, 1.000,
+        0.333, 0.000, 0.000,
+        0.500, 0.000, 0.000,
+        0.667, 0.000, 0.000,
+        0.833, 0.000, 0.000,
+        1.000, 0.000, 0.000,
+        0.000, 0.167, 0.000,
+        0.000, 0.333, 0.000,
+        0.000, 0.500, 0.000,
+        0.000, 0.667, 0.000,
+        0.000, 0.833, 0.000,
+        0.000, 1.000, 0.000,
+        0.000, 0.000, 0.167,
+        0.000, 0.000, 0.333,
+        0.000, 0.000, 0.500,
+        0.000, 0.000, 0.667,
+        0.000, 0.000, 0.833,
+        0.000, 0.000, 1.000,
+        0.000, 0.000, 0.000,
+        0.143, 0.143, 0.143,
+        0.286, 0.286, 0.286,
+        0.429, 0.429, 0.429,
+        0.571, 0.571, 0.571,
+        0.714, 0.714, 0.714,
+        0.857, 0.857, 0.857,
+        0.000, 0.447, 0.741,
+        0.314, 0.717, 0.741,
+        0.50, 0.5, 0
+    ]
+).astype(np.float32).reshape(-1, 3)
+
+
+def vis_helmet(img, boxes, scores, cls_ids, conf=0.5, class_names=None):
+
+    for i in range(len(boxes)):
+        box = boxes[i]
+        cls_id = int(cls_ids[i])
+        score = scores[i]
+        if score < conf:
+            continue
+        x0 = round(box[0])
+        y0 = round(box[1])
+        x1 = round(box[2])
+        y1 = round(box[3])
+
+        color = (_COLORS_helmet[cls_id] * 255).astype(np.uint8).tolist()
         cv2.rectangle(img, (x0, y0), (x1, y1), color, 2)
         if class_names is not None:
             text = '{}:{:.1f}%'.format(class_names[cls_id], score * 100)
-            txt_color = (0, 0, 0) if np.mean(_COLORS[cls_id]) > 0.5 else (255, 255, 255)
+            txt_color = (0, 0, 0) if np.mean(_COLORS_helmet[cls_id]) > 0.5 else (255, 255, 255)
             font = cv2.FONT_HERSHEY_SIMPLEX
             txt_size = cv2.getTextSize(text, font, 0.4, 1)[0]
-            txt_bk_color = (_COLORS[cls_id] * 255 * 0.7).astype(np.uint8).tolist()
+            txt_bk_color = (_COLORS_helmet[cls_id] * 255 * 0.7).astype(np.uint8).tolist()
             cv2.rectangle(
                 img,
                 (x0, y0 - int(1.5*txt_size[1])),
@@ -132,7 +252,7 @@ def vis(img, boxes, scores, cls_ids, conf=0.5, class_names=None):
     return img
 
 
-_COLORS = np.array(
+_COLORS_helmet = np.array(
     [
         [0.1, 0.8, 0.1],
         [0.1, 0.1, 0.8],
@@ -334,6 +454,7 @@ def runCamera(frame_queue:mp.Queue, command:mp.Value, alert:mp.Value, camera_id:
 
             yolox_det_data_helmet = yolox_det_nn_helmet.tryGet()
             frame = cam_out.get().getCvFrame()
+            frame_debug = frame.copy()
             yolox_det_data_phone = yolox_det_nn_phone.tryGet()
 
             if yolox_det_data_phone is not None:
@@ -359,6 +480,14 @@ def runCamera(frame_queue:mp.Queue, command:mp.Value, alert:mp.Value, camera_id:
                 if dets is not None:
                     final_boxes = dets[:, :4]
                     final_scores, final_cls_inds = dets[:, 4], dets[:, 5]
+                    frame_debug = vis_phone(
+                        frame_debug,
+                        final_boxes,
+                        final_scores,
+                        final_cls_inds,
+                        conf=0.4,
+                        class_names=CLASSES,
+                    )
                     for cls_ind in final_cls_inds:
                         object_name = CLASSES[int(cls_ind)]
                         if object_name == "phone":
@@ -390,16 +519,24 @@ def runCamera(frame_queue:mp.Queue, command:mp.Value, alert:mp.Value, camera_id:
                 if dets is not None:
                     final_boxes = dets[:, :4]
                     final_scores, final_cls_inds = dets[:, 4], dets[:, 5]
+                    frame_debug = vis_helmet(
+                        frame_debug,
+                        final_boxes,
+                        final_scores,
+                        final_cls_inds,
+                        conf=0.6,
+                        class_names=VOC_CLASSES,
+                    )
                     for cls_ind in final_cls_inds:
                         object_name = VOC_CLASSES[int(cls_ind)]
                         if object_name == "helmet":
                             helmet_count += 1
                         elif object_name == "head":
-                            head_count +=1
+                            head_count += 1
 
             if alert.value != AlertFactory.AlertIndex_None:
                 continue
-            # print(f"phone: {phone_exists} people:{people_count} helm:{helmet_count}")
+            # print(f"phone: {phone_exists} people:{people_count} helm:{helmet_count} head:{head_count}")
             if phone_exists:
                 alert.value = AlertFactory.AlertIndex_NoPhone
             elif people_count > 1:
@@ -408,7 +545,7 @@ def runCamera(frame_queue:mp.Queue, command:mp.Value, alert:mp.Value, camera_id:
                 alert.value = AlertFactory.AlertIndex_NoHelmet
 
             try:
-                frame_queue.put_nowait(frame)
+                frame_queue.put_nowait(frame_debug)
             except queue.Full:
                 pass
 
