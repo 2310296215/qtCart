@@ -5,8 +5,10 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import QTimer, Qt, pyqtSlot
 from PyQt5.uic import loadUi
+from factories.AlertFactory import AlertFactory, AlertList
 from ui.newUi import Ui_MainWindow
 
+import os
 import numpy as np
 import cv2
 import yaml
@@ -31,9 +33,12 @@ class ViewWindow(QMainWindow, Ui_MainWindow):
         self.defaultRightLabelText = "右鏡頭"
 
     def setup(self, controller):
-        self.qs = QSound('sound/welcome.wav', parent=self.labelSpeed)
+        sound_file = f'{os.getcwd()}/sound/welcome.wav'
+        self.qs = QSound(sound_file)
         self.controller = controller
         # self.showMaximized()
+
+        self.alert_list = [QSound(warn.warn_file) for warn in AlertList]
 
         if config["PRODUCTION"] is True:
             self.qs.play()
@@ -91,13 +96,14 @@ class ViewWindow(QMainWindow, Ui_MainWindow):
 
     @pyqtSlot(WarnAlert)
     def runAlert(self, WarnAlert):
-        if not self.qs.isFinished():
-            return
+
+        for alert in self.alert_list:
+            if not alert.isFinished():
+                return
+
+        self.alert_list[WarnAlert.alertIndex].play()
 
         self.labelSpeed.setText(WarnAlert.warn_message)
-        sound_file = WarnAlert.warn_file
-        self.qs = QSound(sound_file, parent=self.labelSpeed)
-        self.qs.play()
 
         for i in range(0, 1800, 600):
             QTimer.singleShot((0.5 * i), lambda: self.labelSpeed.setStyleSheet(self.defaultStyleSheet.replace("black", WarnAlert.warn_color)))
