@@ -545,7 +545,9 @@ def runCamera(frame_queue:mp.Queue, command:mp.Value, alert:mp.Value, camera_id:
                 alert.value = AlertFactory.AlertIndex_NoHelmet
 
             try:
-                frame_queue.put_nowait(frame_debug)
+                if config["Show_Debug_Frame"]:
+                    frame =frame_debug
+                frame_queue.put_nowait(frame)
             except queue.Full:
                 pass
 

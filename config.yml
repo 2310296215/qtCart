@@ -33,4 +33,6 @@ MainWindowDimention: [1028, 846]
 Record_Seconds: 10
 Record_Total : 6
 
+Show_Debug_Frame: true
+
 PRODUCTION: true
