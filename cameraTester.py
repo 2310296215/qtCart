@@ -14,11 +14,11 @@ def main():
     command = mp.Value('i', 1)
     alert = mp.Value('i', 0)
     status = mp.Value('i', 0)
-    camera_id = config["FRONT_CAMERA_ID"]
+    # camera_id = config["FRONT_CAMERA_ID"]
 
-    # camera_id = config["LEFT_CAMERA_ID"]
-    CameraProcess = YoloCamera.runCamera
-    # CameraProcess = CombinedCamera.runCamera
+    camera_id = config["LEFT_CAMERA_ID"]
+    # CameraProcess = YoloCamera.runCamera
+    CameraProcess = CombinedCamera.runCamera
 
     command.value = 1
     proccess = mp.Process(
@@ -32,17 +32,12 @@ def main():
             frame = frame_queue.get_nowait()
             cv2.imshow('frame', frame)
         except queue.Empty or queue.Full:
-            print("frame")
-            time.sleep(1)
             pass
 
         if cv2.waitKey(1) == ord('q'):
             command.value = 0
-            break
-    if platform == "linux":
-        proccess.terminate()
-    else:
-        proccess.kill()
+            
+    proccess.terminate()
 
 
 if __name__ == '__main__':
