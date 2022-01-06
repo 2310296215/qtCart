@@ -1,17 +1,17 @@
-from PyQt5.QtGui import QPixmap, QImage
-from PyQt5.QtMultimedia import QSound
-from PyQt5.QtWidgets import (
-    QMainWindow
-)
-from PyQt5.QtCore import QTimer, Qt, pyqtSlot
-from PyQt5.uic import loadUi
-from ui.newUi import Ui_MainWindow
 
-import numpy as np
+import os
+
 import cv2
+import numpy as np
 import yaml
+from PyQt5.QtCore import Qt, QTimer, QUrl, pyqtSlot
+from PyQt5.QtGui import QImage, QPixmap
+from PyQt5.QtMultimedia import QMediaContent, QMediaPlayer, QSound
+from PyQt5.QtWidgets import QMainWindow
+from PyQt5.uic import loadUi
 
 from model.AlertModel import WarnAlert
+from ui.newUi import Ui_MainWindow
 
 with open('config.yml', 'r') as stream:
     config = yaml.load(stream, Loader=yaml.FullLoader)
@@ -32,11 +32,19 @@ class ViewWindow(QMainWindow, Ui_MainWindow):
 
     def setup(self, controller):
         self.qs = QSound('sound/welcome.wav', parent=self.labelSpeed)
+
+        self.player = QMediaPlayer()
+        full_file_path = os.path.join(os.getcwd(), 'sound/welcome.wav')
+        url = QUrl.fromLocalFile(full_file_path)
+        content = QMediaContent(url)
+
+        self.player.setMedia(content)
+        self.player.play()
         self.controller = controller
         # self.showMaximized()
 
-        if config["PRODUCTION"] is True:
-            self.qs.play()
+        # if config["PRODUCTION"] is True:
+        #     self.qs.play()
 
     @pyqtSlot()
     def setDefaultView(self):
@@ -91,13 +99,22 @@ class ViewWindow(QMainWindow, Ui_MainWindow):
 
     @pyqtSlot(WarnAlert)
     def runAlert(self, WarnAlert):
-        if not self.qs.isFinished():
+        # if not self.qs.isFinished():
+        #     return
+        print(self.player.mediaStatus())
+        
+        if self.player.mediaStatus() != QMediaPlayer.EndOfMedia:
             return
-
         self.labelSpeed.setText(WarnAlert.warn_message)
         sound_file = WarnAlert.warn_file
-        self.qs = QSound(sound_file, parent=self.labelSpeed)
-        self.qs.play()
+        # self.qs = QSound(sound_file, parent=self.labelSpeed)
+        # self.qs.play()
+
+        full_file_path = os.path.join(os.getcwd(), sound_file)
+        url = QUrl.fromLocalFile(full_file_path)
+        content = QMediaContent(url)
+        self.player.setMedia(content)
+        self.player.play()
 
         for i in range(0, 1800, 600):
             QTimer.singleShot((0.5 * i), lambda: self.labelSpeed.setStyleSheet(self.defaultStyleSheet.replace("black", WarnAlert.warn_color)))

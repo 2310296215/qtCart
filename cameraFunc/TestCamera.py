@@ -25,6 +25,7 @@ def runCamera(frame_queue: mp.Queue, command: mp.Value, alert: mp.Value, camera_
                 # frame = cv2.resize(frame, (config["MainImage_Width"], config["MainImage_Height"]), interpolation=cv2.INTER_LINEAR)
                 try:
                     frame_queue.put_nowait(frame)
+                    alert.value = 1
                 except queue.Full:
                     pass
     except Exception as e:
