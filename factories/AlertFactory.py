@@ -1,14 +1,6 @@
 from model.AlertModel import PedestrianFrontAlert, PedestrianRearAlert, DriverAlert, NoPhoneAlert, NoHelmetAlert
 from enum import IntEnum
 
-AlertList = [
-    PedestrianFrontAlert(),
-    PedestrianRearAlert(),
-    DriverAlert(),
-    NoPhoneAlert(),
-    NoHelmetAlert()
-]
-
 
 class AlertEnum(IntEnum):
     NoAlert = 99

@@ -135,7 +135,7 @@ def runCamera(frame_queue: mp.Queue, command: mp.Value, alert: mp.Value, camera_
 
             frame = inPreview.getCvFrame()
 
-            counter+=1
+            counter += 1
             detections = inDet.detections
 
             # If the frame is available, draw bounding boxes on it and show the frame
