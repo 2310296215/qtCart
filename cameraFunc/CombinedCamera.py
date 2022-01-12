@@ -536,19 +536,19 @@ def runCamera(frame_queue:mp.Queue, command:mp.Value, alert:mp.Value, camera_id:
                         elif object_name == "head":
                             head_count += 1
 
-            if alert.value != AlertEnum.NoAlert:
+            if alert.value != int(AlertEnum.NoAlert):
                 continue
             # print(f"phone: {phone_exists} people:{people_count} helm:{helmet_count} head:{head_count}")
             if phone_exists:
-                alert.value = AlertEnum.NoPhone
+                alert.value = int(AlertEnum.NoPhone)
             elif people_count > 1:
-                alert.value = AlertEnum.PedestrianRear
+                alert.value = int(AlertEnum.PedestrianRear)
 
             if helmet_count > 0:
                 time_without_helmet = datetime.now()
             elif helmet_count < 1 and head_count > 0:
                 if (datetime.now() - time_without_helmet).seconds > config["SecondWithoutHelmet"]:
-                    alert.value = AlertEnum.NoHelmet
+                    alert.value = int(AlertEnum.NoHelmet)
 
             try:
                 if config["Show_Debug_Frame"]:

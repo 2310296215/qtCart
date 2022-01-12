@@ -166,13 +166,13 @@ def runCamera(frame_queue: mp.Queue, command: mp.Value, alert: mp.Value, camera_
 
                 cv2.rectangle(frame, (x1, y1), (x2, y2), color, cv2.FONT_HERSHEY_SIMPLEX)
 
-                if alert.value != AlertEnum.NoAlert:
+                if alert.value != int(AlertEnum.NoAlert):
                     continue
 
                 if person_distance < config["RED_ALERT_DISTANCE"]:
-                    alert.value = AlertEnum.PedestrianFront
+                    alert.value = int(AlertEnum.PedestrianFront)
                 elif person_distance < config["YELLOW_ALERT_DISTANCE"]:
-                    alert.value = AlertEnum.PedestrianFront
+                    alert.value = int(AlertEnum.PedestrianFront)
 
             # crop black out of image
             frame = frame[91:325, 0:416]
