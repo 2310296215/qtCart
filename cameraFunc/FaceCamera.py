@@ -13,6 +13,7 @@ with open('config.yml', 'r') as stream:
 VOC_CLASSES = ("helmet", "head")
 nnPath = "cameraFunc/models/yolox_nano_0_1_0_openvino_2021.4_6shave.blob"
 
+
 def runFaceCamera(frame_queue:mp.Queue, command:mp.Value, alert:mp.Value, camera_id: str, status:mp.Value):
     try:
         # Start defining a pipeline
