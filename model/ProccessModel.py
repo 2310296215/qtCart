@@ -1,7 +1,7 @@
 from abc import ABC, abstractclassmethod
 import cv2
 from datetime import datetime
-from factories import AlertFactory
+from factories.AlertFactory import AlertDict, AlertEnum
 from PyQt5.QtCore import pyqtSignal
 import multiprocessing as mp
 import queue
@@ -93,14 +93,11 @@ class BasicCameraProccess(ICameraProcess):
             pass
 
     def getAlert(self):
-        if self.alert.value == AlertFactory.AlertIndex_None:
+        if self.alert.value == int(AlertEnum.NoAlert):
             return
 
-        WarnAlert = AlertFactory.AlertList[self.alert.value]
-        WarnAlert.redAlert()
-
-        self.AlertSignal.emit(WarnAlert)
-        self.alert.value = AlertFactory.AlertIndex_None
+        self.AlertSignal.emit(AlertEnum(self.alert.value))
+        self.alert.value = int(AlertEnum.NoAlert)
 
     def endCamera(self):
         self.command.value = 0

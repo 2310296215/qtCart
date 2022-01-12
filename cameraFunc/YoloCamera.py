@@ -6,7 +6,7 @@ import queue
 import multiprocessing as mp
 import yaml
 
-from factories import AlertFactory
+from factories.AlertFactory import AlertEnum
 
 with open('config.yml', 'r') as stream:
     config = yaml.load(stream, Loader=yaml.FullLoader)
@@ -77,7 +77,6 @@ def runCamera(frame_queue: mp.Queue, command: mp.Value, alert: mp.Value, camera_
     monoRight.setResolution(dai.MonoCameraProperties.SensorResolution.THE_400_P)
     monoRight.setBoardSocket(dai.CameraBoardSocket.RIGHT)
 
-
     manip.initialConfig.setResizeThumbnail(416, 416)
     manip.initialConfig.setFrameType(dai.ImgFrame.Type.BGR888p)
     manip.inputImage.setBlocking(False)
@@ -131,7 +130,8 @@ def runCamera(frame_queue: mp.Queue, command: mp.Value, alert: mp.Value, camera_
             status.value = 1
             inPreview = previewQueue.get()
             inDet = detectionNNQueue.get()
-            depth = depthQueue.get()
+            # just to release the frame so the pipeline wont stuck
+            depthQueue.get()
 
             frame = inPreview.getCvFrame()
 
@@ -166,13 +166,13 @@ def runCamera(frame_queue: mp.Queue, command: mp.Value, alert: mp.Value, camera_
 
                 cv2.rectangle(frame, (x1, y1), (x2, y2), color, cv2.FONT_HERSHEY_SIMPLEX)
 
-                if alert.value != AlertFactory.AlertIndex_None:
+                if alert.value != AlertEnum.NoAlert:
                     continue
 
                 if person_distance < config["RED_ALERT_DISTANCE"]:
-                    alert.value = AlertFactory.AlertIndex_PedestrianFront
+                    alert.value = AlertEnum.PedestrianFront
                 elif person_distance < config["YELLOW_ALERT_DISTANCE"]:
-                    alert.value = AlertFactory.AlertIndex_PedestrianFront
+                    alert.value = AlertEnum.PedestrianFront
 
             # crop black out of image
             frame = frame[91:325, 0:416]
