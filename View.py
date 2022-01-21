@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import QTimer, Qt, pyqtSlot
 from PyQt5.uic import loadUi
-from factories.AlertFactory import AlertFactory, AlertList
+from factories.AlertFactory import AlertDict, AlertEnum
 from ui.newUi import Ui_MainWindow
 
 import os
@@ -13,7 +13,6 @@ import numpy as np
 import cv2
 import yaml
 
-from model.AlertModel import WarnAlert
 
 with open('config.yml', 'r') as stream:
     config = yaml.load(stream, Loader=yaml.FullLoader)
@@ -33,15 +32,23 @@ class ViewWindow(QMainWindow, Ui_MainWindow):
         self.defaultRightLabelText = "右鏡頭"
 
     def setup(self, controller):
-        sound_file = f'{os.getcwd()}/sound/welcome.wav'
-        self.qs = QSound(sound_file)
         self.controller = controller
         # self.showMaximized()
 
-        self.alert_list = [QSound(warn.warn_file) for warn in AlertList]
+        self.sound_dict = self.setSounddict()
+
+        self.sound_welcome = QSound(f'{os.getcwd()}/sound/welcome.wav')
 
         if config["PRODUCTION"] is True:
-            self.qs.play()
+            self.sound_welcome.play()
+
+    def setSounddict(self):
+        sound_dict = {}
+        for key in AlertDict:
+            alert = AlertDict[key]
+            sound_dict[key] = QSound(alert.warn_file)
+
+        return sound_dict
 
     @pyqtSlot()
     def setDefaultView(self):
@@ -94,18 +101,22 @@ class ViewWindow(QMainWindow, Ui_MainWindow):
     def UpdateGpuUsage(self, value):
         self.labelGpuNum.setText(value)
 
-    @pyqtSlot(WarnAlert)
-    def runAlert(self, WarnAlert):
+    @pyqtSlot(AlertEnum)
+    def runAlert(self, alertKey):
 
-        for alert in self.alert_list:
-            if not alert.isFinished():
+        for key in self.sound_dict:
+            if not self.sound_dict[key].isFinished():
                 return
 
-        current_alert = self.alert_list[WarnAlert.alertIndex]
-        current_alert.play()
+        WarnAlert = AlertDict[alertKey]
+        WarnAlert.redAlert()
+
+        current_sound = self.sound_dict[alertKey]
+        current_sound.play()
 
         self.labelSpeed.setText(WarnAlert.warn_message)
 
+        QTimer.singleShot(4000, lambda: self.labelSpeed.setText(self.defaultWarnMessage))
         for i in range(0, 2400, 600):
             if i > 1500:
                 QTimer.singleShot(i, lambda: self.labelSpeed.setText(self.defaultWarnMessage))
@@ -113,8 +124,6 @@ class ViewWindow(QMainWindow, Ui_MainWindow):
             QTimer.singleShot((0.5 * i), lambda: self.labelSpeed.setStyleSheet(self.defaultStyleSheet.replace("black", WarnAlert.warn_color)))
             QTimer.singleShot(
                 i, lambda: self.labelSpeed.setStyleSheet(self.defaultStyleSheet))
-
-
 
     def keyPressEvent(self, event):
         key = event.key()

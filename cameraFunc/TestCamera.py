@@ -3,7 +3,7 @@ import queue
 from datetime import datetime
 import multiprocessing as mp
 import yaml
-from factories import AlertFactory
+from factories.AlertFactory import AlertEnum
 
 with open('config.yml', 'r') as stream:
     config = yaml.load(stream, Loader=yaml.FullLoader)
@@ -27,6 +27,8 @@ def runCamera(frame_queue: mp.Queue, command: mp.Value, alert: mp.Value, camera_
                     frame_queue.put_nowait(frame)
                 except queue.Full:
                     pass
+
+            alert.value = int(AlertEnum.NoHelmet)
     except Exception as e:
         print(e)
 
