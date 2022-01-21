@@ -21,7 +21,7 @@ HEAD_DOSE_COUNT: 5
 HEAD_TILT_COUNT: 5
 YAWN_COUNT: 5
 FATIGUE_TOTAL_COUNT: 8
-SecondWithoutHelmet : 60
+SecondWithoutHelmet: 3
 
 # 234:416
 MainImage_Height: 234

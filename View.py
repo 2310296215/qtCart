@@ -107,7 +107,6 @@ class ViewWindow(QMainWindow, Ui_MainWindow):
         self.labelSpeed.setText(WarnAlert.warn_message)
 
         for i in range(0, 2400, 600):
-            print(i)
             if i > 1500:
                 QTimer.singleShot(i, lambda: self.labelSpeed.setText(self.defaultWarnMessage))
                 continue
