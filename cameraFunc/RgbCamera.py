@@ -29,11 +29,14 @@ def runCamera(frame_queue:mp.Queue, command:mp.Value, alert:mp.Value, camera_id:
         if not found:
             raise RuntimeError("device not found")
 
+        print(f"device found {device_info.desc.name}")
+        print(device_info.state)
+        print(dir(device_info))
         device = dai.Device(pipeline, device_info)
         print("Starting pipeline...")
         cam_out = device.getOutputQueue("cam_out", 1, True)
 
-        while True:
+        while command.value == 1:
             in_rgb = cam_out.tryGet()
             if in_rgb is not None:
                 frame = in_rgb.getCvFrame()
