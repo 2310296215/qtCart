@@ -44,3 +44,15 @@ videos/cam_192.168.1.201_2.avi
 videos/cam_192.168.1.201_3.avi
 videos/cam_192.168.1.201_4.avi
 videos/cam_192.168.1.201_5.avi
+cameraFunc/CombinedCamera.py
+build/Program/Analysis-00.toc
+build/Program/base_library.zip
+build/Program/EXE-00.toc
+build/Program/PKG-00.toc
+build/Program/Program.pkg
+build/Program/PYZ-00.pyz
+build/Program/PYZ-00.toc
+build/Program/warn-Program.txt
+build/Program/xref-Program.html
+build/Program/localpycos/struct.pyo
+Program.spec
