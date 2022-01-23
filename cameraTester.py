@@ -3,7 +3,7 @@ import multiprocessing as mp
 import yaml
 import time
 from sys import platform
-from cameraFunc import YoloCamera, CombinedCamera, TestCamera
+from cameraFunc import YoloCamera, CombinedCamera, TestCamera, RgbCamera
 import queue
 
 with open('config.yml', 'r') as stream:
@@ -14,11 +14,12 @@ def main():
     command = mp.Value('i', 1)
     alert = mp.Value('i', 0)
     status = mp.Value('i', 0)
-    # camera_id = config["FRONT_CAMERA_ID"]
-
     camera_id = config["LEFT_CAMERA_ID"]
+
+    # camera_id = config["LEFT_CAMERA_ID"]
     # CameraProcess = YoloCamera.runCamera
-    CameraProcess = CombinedCamera.runCamera
+    # CameraProcess = CombinedCamera.runCamera
+    CameraProcess = RgbCamera.runCamera
 
     command.value = 1
     proccess = mp.Process(
@@ -36,7 +37,7 @@ def main():
 
         if cv2.waitKey(1) == ord('q'):
             command.value = 0
-            
+
     proccess.terminate()
 
 
