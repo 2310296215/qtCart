@@ -26,3 +26,6 @@ RIGHT_CAMERA_ID:
 右邊畫面（左邊相機）RIGHT_CAMERA
 
 分別用staticip.py把預設的ip改為設定中的值
+先把電腦設定成預設時的ip (看圖)
+看到success就完成了
+把電腦改成設定完成的IP就可以在新的IP連到相機
