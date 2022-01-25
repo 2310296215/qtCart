@@ -438,8 +438,9 @@ def runCamera(frame_queue:mp.Queue, command:mp.Value, alert:mp.Value, camera_id:
         status.value = 0
         raise RuntimeError("device not found")
 
-    device = dai.Device(pipeline, device_info)
     print("Starting pipeline...")
+    device = dai.Device(pipeline, device_info)
+
     cam_out = device.getOutputQueue("cam_out", 1, True)
     yolox_det_nn_helmet = device.getOutputQueue(name="yolox_det_nn_helmet", maxSize=4, blocking=False)
     yolox_det_nn_phone = device.getOutputQueue("yolox_det_nn_phone", 4, False)

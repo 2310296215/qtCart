@@ -27,7 +27,7 @@ class CameraWorker(QThread):
         RightCamera = CombinedCameraProcess(config["RIGHT_CAMERA_ID"], self.RightImage, self.Alert, self.RightCameraStatus)
         FrontCamera = YoloCameraProcess(config["FRONT_CAMERA_ID"], self.FrontImage, self.Alert, self.FrontCameraStatus)
 
-        Cameras = [TestCamera] #[LeftCamera, RightCamera, FrontCamera]
+        Cameras = [LeftCamera, RightCamera, FrontCamera]
 
         for Camera in Cameras:
             Camera.runCamera()
