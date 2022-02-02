@@ -15,17 +15,25 @@ https://serverok.in/run-a-script-on-boot-using-systemd-on-ubuntu-18-04
 # set hdmi as default audio output
 https://itectec.com/ubuntu/ubuntu-how-do-you-set-a-default-audio-output-device-in-ubuntu-18-04/
 
+pacmd list-sinks
 pactl set-default-sink alsa_output.platform-3510000.hda.hdmi-stereo-extra1
 
 # get pyqt5 for venv
-cp -rp /usr/lib/python3/dist-packages/sip* dai/lib/python3.6/site-packages/
-cp -rp /usr/lib/python3/dist-packages/PyQt5/ dai/lib/python3.6/site-packages/
+pip3 install --upgrade pip
+pip3 install --upgrade setuptools
+
+sudo apt-get install qt5-default pyqt5-dev pyqt5-dev-tools
+sudo apt-get install python3-pyqt5
+sudo apt-get install python3-pyqt5.qtmultimedia
+
+cp -rp /usr/lib/python3/dist-packages/sip* carEnv/lib/python3.6/site-packages/
+cp -rp /usr/lib/python3/dist-packages/PyQt5/ carEnv/lib/python3.6/site-packages/
 
 # ipconfig
 sudo ifconfig eth0 169.254.1.10 netmask 255.255.0.0 up
 sudo ifconfig eth0 192.168.1.203 netmask 255.255.255.0 up
 
-
+# if shown CORE ENDED
 export OPENBLAS_CORETYPE=ARMV8
 
 nano ~/.bashrc
