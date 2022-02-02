@@ -1,8 +1,11 @@
-1.安裝虛擬環境：sudo pip3 install virtualenv
-2.進入虛擬環境：source ~/Documents/qtCart/dai2/bin/activate
+1.安裝虛擬環境：sudo apt-get install python3-venv
+建立虛擬環境：python3 -m venv dai2
+2.進入虛擬環境：
+cd Documents/qtCart
+source ~/Documents/qtCart/dai2/bin/activate
 3.安裝PyQt5:
-pip3 install --upgrade pip
-pip3 install --upgrade setuptools
+pip install --upgrade pip
+pip install --upgrade setuptools
 
 sudo apt-get install qt5-default pyqt5-dev pyqt5-dev-tools
 sudo apt-get install python3-pyqt5
