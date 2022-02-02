@@ -122,8 +122,6 @@ class ViewWindow(QMainWindow, Ui_MainWindow):
                 QTimer.singleShot(i, lambda: self.labelSpeed.setText(self.defaultWarnMessage))
                 continue
             QTimer.singleShot((0.5 * i), lambda: self.labelSpeed.setStyleSheet(self.defaultStyleSheet.replace("black", WarnAlert.warn_color)))
-            QTimer.singleShot(
-                i, lambda: self.labelSpeed.setStyleSheet(self.defaultStyleSheet))
 
     def keyPressEvent(self, event):
         key = event.key()
