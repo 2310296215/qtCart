@@ -6,4 +6,4 @@ cd /home/nvidia/Documents/qtCart
 
 echo $PWD > a.txt
 
-dai2/bin/python Program.py
+carEnv/bin/python Program.py

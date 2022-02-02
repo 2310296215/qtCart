@@ -1,8 +1,8 @@
 1.安裝虛擬環境：sudo apt-get install python3-venv
-建立虛擬環境：python3 -m venv dai2
+建立虛擬環境：python3 -m venv carEnv
 2.進入虛擬環境：
 cd Documents/qtCart
-source ~/Documents/qtCart/dai2/bin/activate
+source ~/Documents/qtCart/carEnv/bin/activate
 3.安裝PyQt5:
 pip install --upgrade pip
 pip install --upgrade setuptools
@@ -11,8 +11,8 @@ sudo apt-get install qt5-default pyqt5-dev pyqt5-dev-tools
 sudo apt-get install python3-pyqt5
 sudo apt-get install python3-pyqt5.qtmultimedia
 
-cp -rp /usr/lib/python3/dist-packages/sip* dai2/lib/python3.6/site-packages/
-cp -rp /usr/lib/python3/dist-packages/PyQt5/ dai2/lib/python3.6/site-packages/
+cp -rp /usr/lib/python3/dist-packages/sip* carEnv/lib/python3.6/site-packages/
+cp -rp /usr/lib/python3/dist-packages/PyQt5/ carEnv/lib/python3.6/site-packages/
 
 4.安裝需要的套件：pip install -r requirements.txt
 

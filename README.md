@@ -26,8 +26,8 @@ sudo apt-get install qt5-default pyqt5-dev pyqt5-dev-tools
 sudo apt-get install python3-pyqt5
 sudo apt-get install python3-pyqt5.qtmultimedia
 
-cp -rp /usr/lib/python3/dist-packages/sip* dai2/lib/python3.6/site-packages/
-cp -rp /usr/lib/python3/dist-packages/PyQt5/ dai2/lib/python3.6/site-packages/
+cp -rp /usr/lib/python3/dist-packages/sip* carEnv/lib/python3.6/site-packages/
+cp -rp /usr/lib/python3/dist-packages/PyQt5/ carEnv/lib/python3.6/site-packages/
 
 # ipconfig
 sudo ifconfig eth0 169.254.1.10 netmask 255.255.0.0 up
